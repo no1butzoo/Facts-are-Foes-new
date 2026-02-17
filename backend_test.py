@@ -612,9 +612,15 @@ class FactsAreFoesAPITester:
         # Facts endpoints
         self.test_facts_endpoints()
         
-        # Authentication
-        self.test_auth_registration()
-        self.test_auth_login()
+        # Authentication (enhanced with new fields)
+        self.test_auth_registration_enhanced()
+        self.test_auth_login_enhanced()
+        
+        # Email verification endpoints
+        self.test_email_verification_endpoints()
+        
+        # Subscription endpoints
+        self.test_subscription_endpoints()
         
         # Fact creation (requires auth)
         self.test_fact_creation()
