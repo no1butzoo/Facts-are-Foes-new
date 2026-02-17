@@ -1,34 +1,120 @@
-.App-logo {
-    height: 40vmin;
-    pointer-events: none;
+/* Egyptian Space Theme - Osiris-9 */
+
+.hero-bg {
+    background: 
+        radial-gradient(ellipse at center, rgba(30, 41, 59, 0.3) 0%, transparent 70%),
+        linear-gradient(to bottom, #020204 0%, #08080A 100%);
+    position: relative;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-    .App-logo {
-        animation: App-logo-spin infinite 20s linear;
-    }
+.hero-bg::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url('https://images.unsplash.com/photo-1639491544797-4306568f3a68?w=1920&q=80');
+    background-size: cover;
+    background-position: center;
+    opacity: 0.15;
+    filter: grayscale(100%) contrast(125%);
 }
 
-.App-header {
-    background-color: #0f0f10;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: calc(10px + 2vmin);
-    color: white;
+.fact-card {
+    @apply relative overflow-hidden bg-card border border-white/10 p-8 flex flex-col gap-4;
+    transition: all 0.5s ease;
 }
 
-.App-link {
-    color: #61dafb;
+.fact-card:hover {
+    @apply border-primary/50;
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.15);
+    transform: translateY(-4px);
 }
 
-@keyframes App-logo-spin {
+.fact-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #FFD700, transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.fact-card:hover::before {
+    opacity: 1;
+}
+
+.category-card {
+    @apply aspect-square flex items-center justify-center bg-muted/20 border border-white/5 cursor-pointer;
+    transition: all 0.3s ease;
+}
+
+.category-card:hover {
+    @apply bg-primary/20 border-primary;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+}
+
+.btn-primary {
+    @apply bg-primary text-primary-foreground font-bold uppercase tracking-widest px-8 py-4 border-2 border-transparent;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    @apply bg-primary/90 border-white/20;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+}
+
+.btn-secondary {
+    @apply bg-transparent border-2 border-primary text-primary font-bold uppercase tracking-widest px-8 py-4;
+    transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+    @apply bg-primary/10;
+}
+
+.input-dark {
+    @apply bg-black/50 border-white/20 h-12 px-4 text-lg font-mono placeholder:text-white/30;
+    transition: all 0.3s ease;
+}
+
+.input-dark:focus {
+    @apply border-primary ring-1 ring-primary;
+}
+
+/* Star field animation */
+@keyframes twinkle {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 1; }
+}
+
+.star {
+    animation: twinkle 3s ease-in-out infinite;
+}
+
+/* Pyramid decoration */
+.pyramid-icon {
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+}
+
+/* Fade in animation */
+@keyframes fadeInUp {
     from {
-        transform: rotate(0deg);
+        opacity: 0;
+        transform: translateY(20px);
     }
     to {
-        transform: rotate(360deg);
+        opacity: 1;
+        transform: translateY(0);
     }
 }
+
+.animate-fade-in-up {
+    animation: fadeInUp 0.6s ease-out forwards;
+}
+
+.animate-delay-100 { animation-delay: 0.1s; }
+.animate-delay-200 { animation-delay: 0.2s; }
+.animate-delay-300 { animation-delay: 0.3s; }
+.animate-delay-400 { animation-delay: 0.4s; }
