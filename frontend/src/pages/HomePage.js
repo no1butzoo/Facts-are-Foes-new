@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { Triangle, ArrowRight, Zap, Eye, Atom, Landmark, Heart, Leaf, Rocket, UtensilsCrossed, Cpu, Brain, Crown, Check } from 'lucide-react';
+import { Triangle, ArrowRight, Zap, Eye, Atom, Landmark, Heart, Leaf, Rocket, UtensilsCrossed, Cpu, Brain, Crown, Check, Loader2 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import FactCard from '../components/FactCard';
 import { toast } from 'sonner';
+import { useAuth } from '../contexts/AuthContext';
+import AuthModal from '../components/AuthModal';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -20,9 +22,43 @@ const CATEGORY_ICONS = {
 };
 
 const HomePage = () => {
+    const { isAuthenticated, isPremium, token } = useAuth();
     const [featuredFacts, setFeaturedFacts] = useState([]);
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [checkoutLoading, setCheckoutLoading] = useState(false);
+    const [showAuthModal, setShowAuthModal] = useState(false);
+    const [authMode, setAuthMode] = useState('register');
+
+    const handleSubscribe = async () => {
+        if (!isAuthenticated) {
+            setAuthMode('register');
+            setShowAuthModal(true);
+            return;
+        }
+
+        if (isPremium) {
+            toast.success('You are already a premium member!');
+            return;
+        }
+
+        setCheckoutLoading(true);
+        try {
+            const response = await axios.post(`${API}/subscription/create-checkout`, {
+                plan_id: 'premium_monthly',
+                origin_url: window.location.origin
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            // Redirect to Stripe checkout
+            window.location.href = response.data.checkout_url;
+        } catch (error) {
+            console.error('Checkout error:', error);
+            toast.error(error.response?.data?.detail || 'Failed to start checkout');
+            setCheckoutLoading(false);
+        }
+    };
 
     useEffect(() => {
         const fetchData = async () => {
