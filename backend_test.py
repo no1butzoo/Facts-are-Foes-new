@@ -366,6 +366,12 @@ class FactsAreFoesAPITester:
         # User endpoints
         self.test_user_endpoints()
         
+        # Engagement tracking (new premium feature)
+        self.test_engagement_tracking()
+        
+        # Admin endpoints (new premium feature)
+        self.test_admin_endpoints()
+        
         # Print final results
         print(f"\n📊 Test Results: {self.tests_passed}/{self.tests_run} passed")
         
