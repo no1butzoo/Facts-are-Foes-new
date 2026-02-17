@@ -7,6 +7,7 @@ import ExplorePage from "./pages/ExplorePage";
 import FactDetailPage from "./pages/FactDetailPage";
 import SubmitFactPage from "./pages/SubmitFactPage";
 import ProfilePage from "./pages/ProfilePage";
+import AdminPage from "./pages/AdminPage";
 import "./App.css";
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
             <Route path="/submit" element={<SubmitFactPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/profile/:userId" element={<ProfilePage />} />
+            <Route path="/admin" element={<AdminPage />} />
           </Routes>
         </Layout>
         <Toaster position="bottom-right" theme="dark" />
