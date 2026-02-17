@@ -2,13 +2,14 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import { 
-    ThumbsUp, ThumbsDown, ArrowLeft, Sparkles, ExternalLink, User, Calendar,
+    ThumbsUp, ThumbsDown, ArrowLeft, Sparkles, ExternalLink, User, Calendar, Eye,
     Atom, Landmark, Heart, Leaf, Rocket, UtensilsCrossed, Cpu, Brain, Loader2
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'sonner';
+import ShareButtons from '../components/ShareButtons';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -30,18 +31,35 @@ const FactDetailPage = () => {
     const [loading, setLoading] = useState(true);
     const [userVote, setUserVote] = useState(null);
     const [generatingAI, setGeneratingAI] = useState(false);
+    const [engagement, setEngagement] = useState({ views: 0, shares: 0 });
 
     useEffect(() => {
         fetchFact();
+        trackView();
         if (isAuthenticated) {
             fetchUserVote();
         }
     }, [id, isAuthenticated]);
 
+    const trackView = async () => {
+        try {
+            await axios.post(`${API}/engagement`, {
+                fact_id: id,
+                event_type: 'view'
+            });
+        } catch (error) {
+            console.error('Failed to track view:', error);
+        }
+    };
+
     const fetchFact = async () => {
         try {
-            const response = await axios.get(`${API}/facts/${id}`);
-            setFact(response.data);
+            const [factRes, engagementRes] = await Promise.all([
+                axios.get(`${API}/facts/${id}`),
+                axios.get(`${API}/facts/${id}/engagement`).catch(() => ({ data: { views: 0, shares: 0 } }))
+            ]);
+            setFact(factRes.data);
+            setEngagement(engagementRes.data);
         } catch (error) {
             console.error('Error fetching fact:', error);
             toast.error('Failed to load fact');
@@ -163,7 +181,7 @@ const FactDetailPage = () => {
                     </h1>
 
                     {/* Meta */}
-                    <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
+                    <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground mb-6">
                         <span className="flex items-center gap-2">
                             <User className="w-4 h-4" />
                             {fact.author_username}
@@ -172,7 +190,14 @@ const FactDetailPage = () => {
                             <Calendar className="w-4 h-4" />
                             {new Date(fact.created_at).toLocaleDateString()}
                         </span>
+                        <span className="flex items-center gap-2">
+                            <Eye className="w-4 h-4" />
+                            {engagement.views} views
+                        </span>
                     </div>
+
+                    {/* Share Buttons */}
+                    <ShareButtons fact={fact} />
                 </div>
 
                 {/* Content */}
