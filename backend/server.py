@@ -124,6 +124,16 @@ class EngagementEvent(BaseModel):
     event_type: str  # "view", "share", "time_spent"
     value: Optional[str] = None  # For share: platform name, for time_spent: seconds
 
+class CheckoutRequest(BaseModel):
+    plan_id: str
+    origin_url: str
+
+class EmailVerificationRequest(BaseModel):
+    token: str
+
+class ResendVerificationRequest(BaseModel):
+    email: EmailStr
+
 # ============== AUTH HELPERS ==============
 
 def hash_password(password: str) -> str:
