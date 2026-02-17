@@ -1,18 +1,22 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
+import asyncio
 from pathlib import Path
-from pydantic import BaseModel, Field, ConfigDict
-from typing import List, Optional
+from pydantic import BaseModel, Field, ConfigDict, EmailStr
+from typing import List, Optional, Dict
 import uuid
+import secrets
 from datetime import datetime, timezone, timedelta
 import bcrypt
 import jwt
+import resend
 from emergentintegrations.llm.chat import LlmChat, UserMessage
+from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionResponse, CheckoutStatusResponse, CheckoutSessionRequest
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -29,6 +33,25 @@ JWT_EXPIRATION_HOURS = 24
 
 # Emergent LLM Key
 EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY', '')
+
+# Stripe Config
+STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY', '')
+
+# Resend Email Config
+RESEND_API_KEY = os.environ.get('RESEND_API_KEY', '')
+SENDER_EMAIL = os.environ.get('SENDER_EMAIL', 'onboarding@resend.dev')
+if RESEND_API_KEY:
+    resend.api_key = RESEND_API_KEY
+
+# Subscription Plans
+SUBSCRIPTION_PLANS = {
+    "premium_monthly": {
+        "name": "Premium Monthly",
+        "price": 9.00,
+        "currency": "usd",
+        "features": ["Unlimited AI explanations", "Ad-free experience", "Early access", "Premium badge", "Priority support"]
+    }
+}
 
 app = FastAPI(title="Facts Are Foes API")
 api_router = APIRouter(prefix="/api")
