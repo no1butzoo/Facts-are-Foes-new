@@ -46,9 +46,9 @@ if RESEND_API_KEY:
 # Subscription Plans
 SUBSCRIPTION_PLANS = {
     "premium_monthly": {
-        "name": "Premium Monthly"
-        "price": 9.00
-        "currency": "usd"
+        "name": "Premium Monthly",
+        "price": 9.00,
+        "currency": "usd",
         "features": ["Unlimited AI explanations", "Ad-free experience", "Early access", "Premium badge", "Priority support"]
     }
 }
