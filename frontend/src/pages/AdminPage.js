@@ -472,54 +472,57 @@ const AdminPage = () => {
 
                     {/* Top Performing Tab */}
                     <TabsContent value="top">
-                        <div className="grid md:grid-cols-2 gap-6">
-                            {/* Top Facts */}
-                            <div className="bg-card border border-white/10 p-6">
-                                <h3 className="font-heading text-lg uppercase tracking-widest mb-4 flex items-center gap-2">
-                                    <TrendingUp className="w-5 h-5 text-primary" />
-                                    Top Facts by Upvotes
-                                </h3>
-                                <div className="space-y-4">
-                                    {stats?.top_facts?.map((fact, index) => (
-                                        <div key={fact.id} className="flex items-center gap-4 p-3 bg-muted/10 border border-white/5">
-                                            <span className="font-heading text-2xl text-primary">#{index + 1}</span>
-                                            <div className="flex-1">
-                                                <div className="font-medium">{fact.title}</div>
-                                                <div className="text-sm text-muted-foreground">{fact.author_username}</div>
+                        <div className="space-y-6">
+                            {/* Top row - Top Facts and Category Distribution side by side on desktop */}
+                            <div className="grid md:grid-cols-2 gap-6">
+                                {/* Top Facts */}
+                                <div className="bg-card border border-white/10 p-6">
+                                    <h3 className="font-heading text-lg uppercase tracking-widest mb-4 flex items-center gap-2">
+                                        <TrendingUp className="w-5 h-5 text-primary" />
+                                        Top Facts by Upvotes
+                                    </h3>
+                                    <div className="space-y-4">
+                                        {stats?.top_facts?.map((fact, index) => (
+                                            <div key={fact.id} className="flex items-center gap-4 p-3 bg-muted/10 border border-white/5">
+                                                <span className="font-heading text-2xl text-primary">#{index + 1}</span>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="font-medium truncate">{fact.title}</div>
+                                                    <div className="text-sm text-muted-foreground">{fact.author_username}</div>
+                                                </div>
+                                                <div className="text-right flex-shrink-0">
+                                                    <div className="font-bold text-green-500">+{fact.upvotes}</div>
+                                                    <div className="text-xs text-muted-foreground">{fact.category}</div>
+                                                </div>
                                             </div>
-                                            <div className="text-right">
-                                                <div className="font-bold text-green-500">+{fact.upvotes}</div>
-                                                <div className="text-xs text-muted-foreground">{fact.category}</div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Category Distribution */}
+                                <div className="bg-card border border-white/10 p-6">
+                                    <h3 className="font-heading text-lg uppercase tracking-widest mb-4 flex items-center gap-2">
+                                        <BarChart3 className="w-5 h-5 text-secondary" />
+                                        Facts by Category
+                                    </h3>
+                                    <div className="space-y-3">
+                                        {Object.entries(stats?.category_stats || {}).map(([category, count]) => (
+                                            <div key={category} className="flex items-center gap-4">
+                                                <span className="w-28 text-sm uppercase tracking-widest text-muted-foreground truncate">{category}</span>
+                                                <div className="flex-1 h-6 bg-muted/20 overflow-hidden min-w-[100px]">
+                                                    <div 
+                                                        className="h-full bg-gradient-to-r from-primary to-secondary"
+                                                        style={{ width: `${(count / Math.max(...Object.values(stats?.category_stats || {1:1}))) * 100}%` }}
+                                                    />
+                                                </div>
+                                                <span className="font-mono text-sm w-8 text-right">{count}</span>
                                             </div>
-                                        </div>
-                                    ))}
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
 
-                            {/* Category Distribution */}
+                            {/* Recent Activity - Full width */}
                             <div className="bg-card border border-white/10 p-6">
-                                <h3 className="font-heading text-lg uppercase tracking-widest mb-4 flex items-center gap-2">
-                                    <BarChart3 className="w-5 h-5 text-secondary" />
-                                    Facts by Category
-                                </h3>
-                                <div className="space-y-3">
-                                    {Object.entries(stats?.category_stats || {}).map(([category, count]) => (
-                                        <div key={category} className="flex items-center gap-4">
-                                            <span className="w-24 text-sm uppercase tracking-widest text-muted-foreground">{category}</span>
-                                            <div className="flex-1 h-6 bg-muted/20 overflow-hidden">
-                                                <div 
-                                                    className="h-full bg-gradient-to-r from-primary to-secondary"
-                                                    style={{ width: `${(count / Math.max(...Object.values(stats?.category_stats || {1:1}))) * 100}%` }}
-                                                />
-                                            </div>
-                                            <span className="font-mono text-sm">{count}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Recent Activity */}
-                            <div className="bg-card border border-white/10 p-6 md:col-span-2">
                                 <h3 className="font-heading text-lg uppercase tracking-widest mb-4">
                                     Last 7 Days Activity
                                 </h3>
