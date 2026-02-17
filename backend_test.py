@@ -475,6 +475,9 @@ class FactsAreFoesAPITester:
         # Test admin functionality with first user logic
         self.test_admin_with_first_user()
         
+        # Test admin functionality with admin email
+        self.test_admin_with_admin_email()
+        
         # Print final results
         print(f"\n📊 Test Results: {self.tests_passed}/{self.tests_run} passed")
         
