@@ -326,11 +326,16 @@ const HomePage = () => {
                             </ul>
                             <Button 
                                 className="w-full btn-primary"
-                                onClick={() => toast.success('Subscription feature coming soon! 🏛️')}
+                                onClick={handleSubscribe}
+                                disabled={checkoutLoading || isPremium}
                                 data-testid="subscribe-btn"
                             >
-                                <Crown className="w-4 h-4 mr-2" />
-                                Subscribe for $9/month
+                                {checkoutLoading ? (
+                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                ) : (
+                                    <Crown className="w-4 h-4 mr-2" />
+                                )}
+                                {isPremium ? 'You are Premium!' : 'Subscribe for $9/month'}
                             </Button>
                         </div>
                     </div>
