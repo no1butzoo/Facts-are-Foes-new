@@ -26,8 +26,8 @@ const AuthModal = ({ isOpen, onClose, mode, setMode }) => {
                 await login(formData.email, formData.password);
                 toast.success('Welcome back, seeker of truth!');
             } else {
-                await register(formData.username, formData.email, formData.password);
-                toast.success('Welcome to Facts Are Foes!');
+                const result = await register(formData.username, formData.email, formData.password);
+                toast.success(result.message || 'Welcome to Facts Are Foes! Check your email to verify your account.');
             }
             onClose();
             setFormData({ username: '', email: '', password: '' });
