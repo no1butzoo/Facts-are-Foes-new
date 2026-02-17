@@ -337,7 +337,64 @@ class FactsAreFoesAPITester:
         else:
             self.log_test("Engagement Timeline Valid", False, "Invalid timeline response")
         
-        return True  # Return true even if not admin, as this is expected behavior
+    def test_admin_with_first_user(self):
+        """Test admin functionality by creating a fresh user (who should be admin if first)"""
+        print("\n👑 Testing Admin Functionality with First User Logic...")
+        
+        # Create a new user with a unique timestamp
+        timestamp = datetime.now().strftime('%H%M%S%f')
+        admin_user_data = {
+            "username": f"admin_test_{timestamp}",
+            "email": f"admin_{timestamp}@example.com",
+            "password": "AdminPass123!"
+        }
+        
+        success, response = self.run_test("Create Admin Test User", "POST", "auth/register", 200, admin_user_data)
+        
+        if not success or 'token' not in response:
+            print("⚠️ Failed to create admin test user")
+            return False
+        
+        admin_token = response['token']
+        
+        # Test admin endpoints with this user
+        headers = {'Authorization': f'Bearer {admin_token}'}
+        
+        # Test admin stats
+        url = f"{self.base_url}/admin/stats"
+        try:
+            admin_response = requests.get(url, headers=headers)
+            if admin_response.status_code == 200:
+                self.log_test("Admin Access Confirmed", True, "User has admin privileges")
+                
+                # Test other admin endpoints
+                stats_data = admin_response.json()
+                if 'total_users' in stats_data and 'total_facts' in stats_data:
+                    self.log_test("Admin Stats Structure Valid", True)
+                
+                # Test admin users endpoint
+                users_response = requests.get(f"{self.base_url}/admin/users?limit=5", headers=headers)
+                if users_response.status_code == 200:
+                    self.log_test("Admin Users Endpoint Working", True)
+                
+                # Test admin facts endpoint
+                facts_response = requests.get(f"{self.base_url}/admin/facts?limit=5", headers=headers)
+                if facts_response.status_code == 200:
+                    self.log_test("Admin Facts Endpoint Working", True)
+                
+                # Test engagement timeline
+                timeline_response = requests.get(f"{self.base_url}/admin/engagement/timeline?days=3", headers=headers)
+                if timeline_response.status_code == 200:
+                    self.log_test("Admin Timeline Endpoint Working", True)
+                
+                return True
+            else:
+                self.log_test("Admin Access Check", False, f"Expected admin access, got {admin_response.status_code}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Admin Test Error", False, f"Error: {str(e)}")
+            return False
 
     def run_all_tests(self):
         """Run all API tests"""
