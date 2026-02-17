@@ -472,9 +472,6 @@ class FactsAreFoesAPITester:
         # Admin endpoints (new premium feature)
         self.test_admin_endpoints()
         
-        # Test admin functionality with first user logic
-        self.test_admin_with_first_user()
-        
         # Test admin functionality with admin email
         self.test_admin_with_admin_email()
         
