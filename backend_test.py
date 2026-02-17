@@ -244,6 +244,95 @@ class FactsAreFoesAPITester:
         
         return success
 
+    def test_engagement_tracking(self):
+        """Test engagement tracking endpoints"""
+        print("\n📊 Testing Engagement Tracking...")
+        
+        if not self.test_fact_id:
+            print("⚠️ Skipping engagement tests - no fact ID")
+            return False
+        
+        # Test view tracking
+        success, _ = self.run_test("Track View Event", "POST", "engagement", 200, {
+            "fact_id": self.test_fact_id,
+            "event_type": "view"
+        })
+        
+        # Test share tracking
+        self.run_test("Track Share Event", "POST", "engagement", 200, {
+            "fact_id": self.test_fact_id,
+            "event_type": "share",
+            "value": "twitter"
+        })
+        
+        # Test time spent tracking
+        self.run_test("Track Time Spent", "POST", "engagement", 200, {
+            "fact_id": self.test_fact_id,
+            "event_type": "time_spent",
+            "value": "45"
+        })
+        
+        # Test get fact engagement
+        success, response = self.run_test("Get Fact Engagement", "GET", f"facts/{self.test_fact_id}/engagement", 200)
+        
+        if success and 'views' in response and 'shares' in response:
+            self.log_test("Engagement Data Valid", True)
+        else:
+            self.log_test("Engagement Data Valid", False, "Invalid engagement response")
+        
+        return success
+
+    def test_admin_endpoints(self):
+        """Test admin panel endpoints"""
+        print("\n🛡️ Testing Admin Endpoints...")
+        
+        if not self.token:
+            print("⚠️ Skipping admin tests - not authenticated")
+            return False
+        
+        # Test admin stats
+        success, response = self.run_test("Get Admin Stats", "GET", "admin/stats", 200)
+        
+        if success and 'total_users' in response and 'total_facts' in response:
+            self.log_test("Admin Stats Valid", True)
+        else:
+            self.log_test("Admin Stats Valid", False, "Invalid admin stats")
+        
+        # Test get all users (admin)
+        success, response = self.run_test("Get All Users (Admin)", "GET", "admin/users?limit=10", 200)
+        
+        if success and 'users' in response and 'total' in response:
+            self.log_test("Admin Users List Valid", True)
+        else:
+            self.log_test("Admin Users List Valid", False, "Invalid users response")
+        
+        # Test get all facts (admin)
+        success, response = self.run_test("Get All Facts (Admin)", "GET", "admin/facts?limit=10", 200)
+        
+        if success and 'facts' in response and 'total' in response:
+            self.log_test("Admin Facts List Valid", True)
+        else:
+            self.log_test("Admin Facts List Valid", False, "Invalid facts response")
+        
+        # Test feature/unfeature fact
+        if self.test_fact_id:
+            success, response = self.run_test("Toggle Feature Fact", "PUT", f"admin/facts/{self.test_fact_id}/feature", 200)
+            
+            if success and 'is_featured' in response:
+                self.log_test("Feature Toggle Valid", True)
+            else:
+                self.log_test("Feature Toggle Valid", False, "Invalid feature response")
+        
+        # Test engagement timeline
+        success, response = self.run_test("Get Engagement Timeline", "GET", "admin/engagement/timeline?days=7", 200)
+        
+        if success and 'timeline' in response:
+            self.log_test("Engagement Timeline Valid", True)
+        else:
+            self.log_test("Engagement Timeline Valid", False, "Invalid timeline response")
+        
+        return success
+
     def run_all_tests(self):
         """Run all API tests"""
         print("🚀 Starting Facts Are Foes API Tests...")
