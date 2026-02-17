@@ -1,0 +1,124 @@
+{
+  "design_system": {
+    "name": "Osiris-9",
+    "description": "A fusion of Ancient Egyptian monumentality and Deep Space mystery. Dark, gold-accented, and sharp.",
+    "theme_strategy": "dark_only",
+    "typography": {
+      "font_family": {
+        "heading": "Cinzel, serif",
+        "body": "Space Grotesk, sans-serif",
+        "mono": "JetBrains Mono, monospace"
+      },
+      "google_fonts_import": "https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Space+Grotesk:wght@300;400;500;700&display=swap",
+      "scale": {
+        "h1": "text-5xl md:text-7xl font-black tracking-tighter uppercase",
+        "h2": "text-4xl md:text-5xl font-bold tracking-tight",
+        "h3": "text-2xl md:text-3xl font-bold text-primary",
+        "body": "text-base md:text-lg leading-relaxed text-muted-foreground",
+        "caption": "text-xs font-mono tracking-widest uppercase text-accent"
+      }
+    },
+    "colors": {
+      "palette": {
+        "background": "#020204",
+        "foreground": "#E2E8F0",
+        "card": "#08080A",
+        "card_foreground": "#F8FAFC",
+        "popover": "#08080A",
+        "popover_foreground": "#F8FAFC",
+        "primary": "#FFD700",
+        "primary_foreground": "#000000",
+        "secondary": "#00FFFF",
+        "secondary_foreground": "#000000",
+        "muted": "#1E293B",
+        "muted_foreground": "#94A3B8",
+        "accent": "#FF4500",
+        "accent_foreground": "#FFFFFF",
+        "destructive": "#991B1B",
+        "destructive_foreground": "#FFFFFF",
+        "border": "#1E293B",
+        "input": "#1E293B",
+        "ring": "#FFD700"
+      },
+      "gradients": {
+        "gold_glow": "bg-gradient-to-r from-[#FFD700] via-[#FDB931] to-[#FFD700]",
+        "void_mist": "bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-900 via-[#020204] to-[#020204]",
+        "nebula": "bg-gradient-to-br from-indigo-900 via-purple-900 to-black"
+      }
+    },
+    "spacing": {
+      "container_padding": "p-6 md:p-12 lg:p-24",
+      "section_gap": "gap-12 md:gap-24",
+      "element_gap": "gap-4 md:gap-8"
+    },
+    "shapes": {
+      "radius": "rounded-none",
+      "border_width": "border",
+      "effects": {
+        "glass": "bg-black/40 backdrop-blur-xl border border-white/10",
+        "neon_border": "border border-primary/50 shadow-[0_0_15px_rgba(255,215,0,0.3)]",
+        "pyramid_clip": "clip-path: polygon(50% 0%, 0% 100%, 100% 100%)"
+      }
+    },
+    "animation": {
+      "transition": "transition-all duration-300 ease-out",
+      "hover_lift": "hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/20",
+      "glow_pulse": "animate-pulse"
+    }
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-primary text-primary-foreground hover:bg-primary/90 font-bold uppercase tracking-widest rounded-none px-8 py-4 border-2 border-transparent hover:border-white/20 transition-all",
+      "secondary": "bg-transparent border-2 border-primary text-primary hover:bg-primary/10 font-bold uppercase tracking-widest rounded-none px-8 py-4",
+      "ghost": "hover:bg-white/5 text-foreground hover:text-primary uppercase tracking-widest font-medium"
+    },
+    "cards": {
+      "fact_card": "group relative overflow-hidden bg-card border border-white/10 hover:border-primary/50 transition-all duration-500 p-8 flex flex-col gap-4",
+      "category_card": "aspect-square flex items-center justify-center bg-muted/20 hover:bg-primary/20 border border-white/5 hover:border-primary transition-all cursor-pointer group"
+    },
+    "inputs": {
+      "default": "bg-black/50 border-white/20 focus:border-primary focus:ring-1 focus:ring-primary rounded-none h-12 px-4 text-lg font-mono placeholder:text-white/20"
+    }
+  },
+  "layout_strategies": {
+    "landing_page": {
+      "hero": "Full-screen height, centered content, 'Void Mist' background, large Cinzel typography, floating 3D pyramid or glowing orb.",
+      "grid": "Bento grid for 'Featured Facts'. Asymmetrical layout. Use 'col-span-2' for major controversies.",
+      "decorations": "Use SVG hieroglyphs as background patterns with low opacity (5%)."
+    },
+    "fact_detail": {
+      "layout": "Split screen: Left side = Image/Visual (Sticky), Right side = Scrollable text (Explanation).",
+      "typography": "Drop caps for the first letter of the explanation (Ancient manuscript style)."
+    },
+    "dashboard": {
+      "style": "Command center. High density. Monospace fonts for data. Gold borders for active tabs."
+    }
+  },
+  "assets": {
+    "images": {
+      "hero_bg": "https://images.unsplash.com/photo-1639491544797-4306568f3a68?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2ODh8MHwxfHNlYXJjaHw0fHxlZ3lwdGlhbiUyMHB5cmFtaWRzJTIwc3BhY2UlMjBiYWNrZ3JvdW5kfGVufDB8fHx8MTc3MTMwNzY4Mnww&ixlib=rb-4.1.0&q=85",
+      "texture_overlay": "https://images.unsplash.com/photo-1595933706873-4871fe63da39?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA3MDR8MHwxfHNlYXJjaHw0fHxnbG93aW5nJTIwaGllcm9nbHlwaHMlMjBkYXJrJTIwYmFja2dyb3VuZHxlbnwwfHx8fDE3NzEzMDc2ODV8MA&ixlib=rb-4.1.0&q=85",
+      "placeholders": [
+        "https://images.unsplash.com/photo-1597493633263-f9dc9354365a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2ODh8MHwxfHNlYXJjaHwxfHxlZ3lwdGlhbiUyMHB5cmFtaWRzJTIwc3BhY2UlMjBiYWNrZ3JvdW5kfGVufDB8fHx8MTc3MTMwNzY4Mnww&ixlib=rb-4.1.0&q=85",
+        "https://images.unsplash.com/photo-1764312349609-41297ede0e57?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA3MDR8MHwxfHNlYXJjaHwxfHxnbG93aW5nJTIwaGllcm9nbHlwaHMlMjBkYXJrJTIwYmFja2dyb3VuZHxlbnwwfHx8fDE3NzEzMDc2ODV8MA&ixlib=rb-4.1.0&q=85"
+      ]
+    },
+    "icons": "Use 'Lucide-React'. Prefer sharp, geometric icons (e.g., 'Triangle', 'Hexagon', 'Zap', 'Eye'). Avoid rounded icons."
+  },
+  "instructions_to_main_agent": [
+    "1. INSTALL FONTS: Add the Google Fonts link to the <head> of index.html immediately.",
+    "2. CONFIGURE TAILWIND: Update tailwind.config.js with the 'Osiris-9' color palette and font families. Set 'borderRadius' to '0' or '0.125rem' globally.",
+    "3. GLOBAL CSS: Add a global grain texture overlay using 'before' pseudo-element on the body to give it a film/ancient texture.",
+    "4. SHADCN OVERRIDES: When using Shadcn components, strip the 'rounded-md' classes and replace with 'rounded-none'. Add 'border-primary/20' to all cards.",
+    "5. DARK MODE: Force dark mode. Do not implement a light mode toggle. The theme is strictly 'Space Night'.",
+    "6. IMAGES: Apply 'grayscale' and 'contrast-125' filters to all photographic images to make them blend with the dark theme. Only reveal color on hover.",
+    "7. DATA-TESTID: Ensure every interactive element has a data-testid attribute."
+  ],
+  "universal_guidelines": [
+    "Do not use gradients for text unless it is a very large heading.",
+    "Avoid 'Inter' font. It is forbidden.",
+    "Use 2x more padding than you think is necessary.",
+    "Every page must have a 'Hero' moment.",
+    "Use 'Sonner' for toasts."
+  ]
+}
