@@ -150,6 +150,53 @@ def create_token(user_id: str, email: str) -> str:
     }
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
+def generate_verification_token() -> str:
+    return secrets.token_urlsafe(32)
+
+async def send_verification_email(email: str, token: str, origin_url: str):
+    """Send email verification link"""
+    if not RESEND_API_KEY or RESEND_API_KEY == 're_your_api_key_here':
+        logger.warning("Resend API key not configured, skipping email verification")
+        return False
+    
+    verification_url = f"{origin_url}/verify-email?token={token}"
+    
+    html_content = f"""
+    <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #020204; color: #E2E8F0; padding: 40px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+            <div style="width: 60px; height: 60px; background: #FFD700; margin: 0 auto; clip-path: polygon(50% 0%, 0% 100%, 100% 100%);"></div>
+            <h1 style="color: #FFD700; font-size: 28px; margin-top: 20px;">FACTS ARE FOES</h1>
+        </div>
+        <h2 style="color: #FFFFFF; text-align: center;">Verify Your Email</h2>
+        <p style="color: #94A3B8; text-align: center; font-size: 16px;">
+            Welcome, seeker of truth! Click the button below to verify your email and unlock the secrets.
+        </p>
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="{verification_url}" style="display: inline-block; background: #FFD700; color: #000000; padding: 15px 40px; text-decoration: none; font-weight: bold; text-transform: uppercase; letter-spacing: 2px;">
+                Verify Email
+            </a>
+        </div>
+        <p style="color: #64748B; text-align: center; font-size: 12px;">
+            If you didn't create an account, you can safely ignore this email.
+        </p>
+    </div>
+    """
+    
+    params = {
+        "from": SENDER_EMAIL,
+        "to": [email],
+        "subject": "Verify Your Email - Facts Are Foes",
+        "html": html_content
+    }
+    
+    try:
+        await asyncio.to_thread(resend.Emails.send, params)
+        logger.info(f"Verification email sent to {email}")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to send verification email: {e}")
+        return False
+
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
     try:
         payload = jwt.decode(credentials.credentials, JWT_SECRET, algorithms=[JWT_ALGORITHM])
@@ -165,10 +212,12 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
 # ============== AUTH ROUTES ==============
 
 @api_router.post("/auth/register", response_model=dict)
-async def register(user: UserCreate):
+async def register(user: UserCreate, request: Request):
     existing = await db.users.find_one({"$or": [{"email": user.email}, {"username": user.username}]})
     if existing:
         raise HTTPException(status_code=400, detail="Email or username already exists")
+    
+    verification_token = generate_verification_token()
     
     user_doc = {
         "id": str(uuid.uuid4()),
@@ -176,11 +225,71 @@ async def register(user: UserCreate):
         "email": user.email,
         "password_hash": hash_password(user.password),
         "avatar_url": f"https://api.dicebear.com/7.x/shapes/svg?seed={user.username}",
-        "created_at": datetime.now(timezone.utc).isoformat()
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "email_verified": False,
+        "verification_token": verification_token,
+        "is_premium": False,
+        "subscription_id": None
     }
     await db.users.insert_one(user_doc)
+    
+    # Send verification email
+    origin = request.headers.get("origin", str(request.base_url).rstrip('/'))
+    await send_verification_email(user.email, verification_token, origin)
+    
     token = create_token(user_doc["id"], user_doc["email"])
-    return {"token": token, "user": {"id": user_doc["id"], "username": user_doc["username"], "email": user_doc["email"], "avatar_url": user_doc["avatar_url"]}}
+    return {
+        "token": token, 
+        "user": {
+            "id": user_doc["id"], 
+            "username": user_doc["username"], 
+            "email": user_doc["email"], 
+            "avatar_url": user_doc["avatar_url"],
+            "email_verified": user_doc["email_verified"],
+            "is_premium": user_doc["is_premium"]
+        },
+        "message": "Registration successful! Please check your email to verify your account."
+    }
+
+@api_router.post("/auth/verify-email")
+async def verify_email(req: EmailVerificationRequest):
+    user = await db.users.find_one({"verification_token": req.token}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=400, detail="Invalid or expired verification token")
+    
+    if user.get("email_verified"):
+        return {"message": "Email already verified"}
+    
+    await db.users.update_one(
+        {"id": user["id"]},
+        {"$set": {"email_verified": True, "verification_token": None}}
+    )
+    
+    return {"message": "Email verified successfully!", "email": user["email"]}
+
+@api_router.post("/auth/resend-verification")
+async def resend_verification(req: ResendVerificationRequest, request: Request):
+    user = await db.users.find_one({"email": req.email}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if user.get("email_verified"):
+        return {"message": "Email already verified"}
+    
+    # Generate new token
+    new_token = generate_verification_token()
+    await db.users.update_one(
+        {"id": user["id"]},
+        {"$set": {"verification_token": new_token}}
+    )
+    
+    origin = request.headers.get("origin", str(request.base_url).rstrip('/'))
+    sent = await send_verification_email(req.email, new_token, origin)
+    
+    if sent:
+        return {"message": "Verification email sent!"}
+    else:
+        return {"message": "Email service not configured. Your account is active."}
 
 @api_router.post("/auth/login", response_model=dict)
 async def login(user: UserLogin):
@@ -189,17 +298,29 @@ async def login(user: UserLogin):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
     token = create_token(db_user["id"], db_user["email"])
-    return {"token": token, "user": {"id": db_user["id"], "username": db_user["username"], "email": db_user["email"], "avatar_url": db_user.get("avatar_url")}}
+    return {
+        "token": token, 
+        "user": {
+            "id": db_user["id"], 
+            "username": db_user["username"], 
+            "email": db_user["email"], 
+            "avatar_url": db_user.get("avatar_url"),
+            "email_verified": db_user.get("email_verified", False),
+            "is_premium": db_user.get("is_premium", False)
+        }
+    }
 
-@api_router.get("/auth/me", response_model=UserResponse)
+@api_router.get("/auth/me", response_model=dict)
 async def get_me(current_user: dict = Depends(get_current_user)):
-    return UserResponse(
-        id=current_user["id"],
-        username=current_user["username"],
-        email=current_user["email"],
-        avatar_url=current_user.get("avatar_url"),
-        created_at=current_user["created_at"]
-    )
+    return {
+        "id": current_user["id"],
+        "username": current_user["username"],
+        "email": current_user["email"],
+        "avatar_url": current_user.get("avatar_url"),
+        "created_at": current_user["created_at"],
+        "email_verified": current_user.get("email_verified", False),
+        "is_premium": current_user.get("is_premium", False)
+    }
 
 # ============== FACTS ROUTES ==============
 
