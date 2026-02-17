@@ -671,6 +671,112 @@ CATEGORIES = [
 async def get_categories():
     return CATEGORIES
 
+# ============== STRIPE SUBSCRIPTION ROUTES ==============
+
+@api_router.get("/subscription/plans")
+async def get_subscription_plans():
+    """Get available subscription plans"""
+    return {"plans": SUBSCRIPTION_PLANS}
+
+@api_router.post("/subscription/create-checkout")
+async def create_checkout_session(req: CheckoutRequest, current_user: dict = Depends(get_current_user)):
+    """Create a Stripe checkout session for subscription"""
+    if not STRIPE_API_KEY:
+        raise HTTPException(status_code=500, detail="Stripe not configured")
+    
+    plan = SUBSCRIPTION_PLANS.get(req.plan_id)
+    if not plan:
+        raise HTTPException(status_code=400, detail="Invalid plan ID")
+    
+    try:
+        checkout = StripeCheckout(
+            api_key=STRIPE_API_KEY,
+            account_id=current_user["id"]
+        )
+        
+        checkout_request = CheckoutSessionRequest(
+            product_name=plan["name"],
+            unit_amount=int(plan["price"] * 100),  # Convert to cents
+            currency=plan["currency"],
+            quantity=1,
+            mode="subscription",
+            success_url=f"{req.origin_url}/subscription/success?session_id={{CHECKOUT_SESSION_ID}}",
+            cancel_url=f"{req.origin_url}/subscription/cancel"
+        )
+        
+        response: CheckoutSessionResponse = await checkout.create_checkout_session(checkout_request)
+        
+        # Store pending subscription
+        await db.subscriptions.insert_one({
+            "id": str(uuid.uuid4()),
+            "user_id": current_user["id"],
+            "session_id": response.session_id,
+            "plan_id": req.plan_id,
+            "status": "pending",
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+        
+        return {"checkout_url": response.checkout_url, "session_id": response.session_id}
+    
+    except Exception as e:
+        logger.error(f"Stripe checkout error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create checkout session")
+
+@api_router.get("/subscription/status/{session_id}")
+async def get_subscription_status(session_id: str, current_user: dict = Depends(get_current_user)):
+    """Check subscription status by session ID"""
+    if not STRIPE_API_KEY:
+        raise HTTPException(status_code=500, detail="Stripe not configured")
+    
+    try:
+        checkout = StripeCheckout(
+            api_key=STRIPE_API_KEY,
+            account_id=current_user["id"]
+        )
+        
+        status: CheckoutStatusResponse = await checkout.get_checkout_status(session_id)
+        
+        if status.payment_status == "paid":
+            # Update user to premium
+            await db.users.update_one(
+                {"id": current_user["id"]},
+                {"$set": {
+                    "is_premium": True,
+                    "subscription_id": status.subscription_id,
+                    "subscription_updated_at": datetime.now(timezone.utc).isoformat()
+                }}
+            )
+            
+            # Update subscription record
+            await db.subscriptions.update_one(
+                {"session_id": session_id},
+                {"$set": {"status": "active", "subscription_id": status.subscription_id}}
+            )
+        
+        return {
+            "status": status.status,
+            "payment_status": status.payment_status,
+            "subscription_id": status.subscription_id
+        }
+    
+    except Exception as e:
+        logger.error(f"Stripe status check error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to check subscription status")
+
+@api_router.get("/subscription/my-subscription")
+async def get_my_subscription(current_user: dict = Depends(get_current_user)):
+    """Get current user's subscription info"""
+    subscription = await db.subscriptions.find_one(
+        {"user_id": current_user["id"], "status": "active"},
+        {"_id": 0}
+    )
+    
+    return {
+        "is_premium": current_user.get("is_premium", False),
+        "subscription": subscription,
+        "email_verified": current_user.get("email_verified", False)
+    }
+
 # ============== SEED DATA ==============
 
 @api_router.post("/seed")
