@@ -8,6 +8,8 @@ import FactDetailPage from "./pages/FactDetailPage";
 import SubmitFactPage from "./pages/SubmitFactPage";
 import ProfilePage from "./pages/ProfilePage";
 import AdminPage from "./pages/AdminPage";
+import VerifyEmailPage from "./pages/VerifyEmailPage";
+import { SubscriptionSuccessPage, SubscriptionCancelPage } from "./pages/SubscriptionPages";
 import "./App.css";
 
 function App() {
@@ -23,6 +25,9 @@ function App() {
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/profile/:userId" element={<ProfilePage />} />
             <Route path="/admin" element={<AdminPage />} />
+            <Route path="/verify-email" element={<VerifyEmailPage />} />
+            <Route path="/subscription/success" element={<SubscriptionSuccessPage />} />
+            <Route path="/subscription/cancel" element={<SubscriptionCancelPage />} />
           </Routes>
         </Layout>
         <Toaster position="bottom-right" theme="dark" />
