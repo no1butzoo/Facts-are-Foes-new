@@ -374,6 +374,14 @@ const HomePage = () => {
                     </div>
                 </div>
             </footer>
+
+            {/* Auth Modal */}
+            <AuthModal 
+                isOpen={showAuthModal} 
+                onClose={() => setShowAuthModal(false)}
+                mode={authMode}
+                setMode={setAuthMode}
+            />
         </div>
     );
 };
