@@ -96,6 +96,11 @@ class VoteCreate(BaseModel):
 class AIExplainRequest(BaseModel):
     fact_id: str
 
+class EngagementEvent(BaseModel):
+    fact_id: str
+    event_type: str  # "view", "share", "time_spent"
+    value: Optional[str] = None  # For share: platform name, for time_spent: seconds
+
 # ============== AUTH HELPERS ==============
 
 def hash_password(password: str) -> str:
@@ -337,6 +342,163 @@ async def get_user_stats(user_id: str):
     total_upvotes = sum(f.get("upvotes", 0) for f in user_facts)
     total_downvotes = sum(f.get("downvotes", 0) for f in user_facts)
     return {"total_facts": total_facts, "total_upvotes": total_upvotes, "total_downvotes": total_downvotes}
+
+# ============== ENGAGEMENT TRACKING ==============
+
+@api_router.post("/engagement")
+async def track_engagement(event: EngagementEvent):
+    engagement_doc = {
+        "id": str(uuid.uuid4()),
+        "fact_id": event.fact_id,
+        "event_type": event.event_type,
+        "value": event.value,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.engagement.insert_one(engagement_doc)
+    
+    # Update fact view count if it's a view event
+    if event.event_type == "view":
+        await db.facts.update_one({"id": event.fact_id}, {"$inc": {"views": 1}})
+    elif event.event_type == "share":
+        await db.facts.update_one({"id": event.fact_id}, {"$inc": {"shares": 1}})
+    
+    return {"message": "Engagement tracked"}
+
+@api_router.get("/facts/{fact_id}/engagement")
+async def get_fact_engagement(fact_id: str):
+    views = await db.engagement.count_documents({"fact_id": fact_id, "event_type": "view"})
+    shares = await db.engagement.count_documents({"fact_id": fact_id, "event_type": "share"})
+    share_breakdown = await db.engagement.aggregate([
+        {"$match": {"fact_id": fact_id, "event_type": "share"}},
+        {"$group": {"_id": "$value", "count": {"$sum": 1}}}
+    ]).to_list(100)
+    return {"views": views, "shares": shares, "share_breakdown": {s["_id"]: s["count"] for s in share_breakdown if s["_id"]}}
+
+# ============== ADMIN ROUTES ==============
+
+ADMIN_EMAILS = ["admin@factsarefoes.com"]  # Add admin emails here
+
+async def get_admin_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    user = await get_current_user(credentials)
+    # For demo purposes, first registered user or specific emails are admin
+    first_user = await db.users.find_one({}, {"_id": 0}, sort=[("created_at", 1)])
+    if user["email"] in ADMIN_EMAILS or (first_user and user["id"] == first_user["id"]):
+        return user
+    raise HTTPException(status_code=403, detail="Admin access required")
+
+@api_router.get("/admin/stats")
+async def get_admin_stats(admin: dict = Depends(get_admin_user)):
+    total_users = await db.users.count_documents({})
+    total_facts = await db.facts.count_documents({})
+    total_votes = await db.votes.count_documents({})
+    total_views = await db.engagement.count_documents({"event_type": "view"})
+    total_shares = await db.engagement.count_documents({"event_type": "share"})
+    
+    # Get facts by category
+    category_stats = await db.facts.aggregate([
+        {"$group": {"_id": "$category", "count": {"$sum": 1}}}
+    ]).to_list(100)
+    
+    # Get recent activity (last 7 days)
+    week_ago = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()
+    recent_facts = await db.facts.count_documents({"created_at": {"$gte": week_ago}})
+    recent_users = await db.users.count_documents({"created_at": {"$gte": week_ago}})
+    
+    # Top facts by engagement
+    top_facts = await db.facts.find({}, {"_id": 0}).sort("upvotes", -1).limit(5).to_list(5)
+    
+    return {
+        "total_users": total_users,
+        "total_facts": total_facts,
+        "total_votes": total_votes,
+        "total_views": total_views,
+        "total_shares": total_shares,
+        "category_stats": {c["_id"]: c["count"] for c in category_stats if c["_id"]},
+        "recent_facts": recent_facts,
+        "recent_users": recent_users,
+        "top_facts": top_facts
+    }
+
+@api_router.get("/admin/users")
+async def get_all_users(admin: dict = Depends(get_admin_user), limit: int = 50, skip: int = 0):
+    users = await db.users.find({}, {"_id": 0, "password_hash": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    total = await db.users.count_documents({})
+    return {"users": users, "total": total}
+
+@api_router.get("/admin/facts")
+async def get_all_facts_admin(admin: dict = Depends(get_admin_user), limit: int = 50, skip: int = 0, status: Optional[str] = None):
+    query = {}
+    if status == "featured":
+        query["is_featured"] = True
+    elif status == "pending":
+        query["is_featured"] = False
+    
+    facts = await db.facts.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    total = await db.facts.count_documents(query)
+    return {"facts": facts, "total": total}
+
+@api_router.put("/admin/facts/{fact_id}/feature")
+async def toggle_feature_fact(fact_id: str, admin: dict = Depends(get_admin_user)):
+    fact = await db.facts.find_one({"id": fact_id})
+    if not fact:
+        raise HTTPException(status_code=404, detail="Fact not found")
+    
+    new_status = not fact.get("is_featured", False)
+    await db.facts.update_one({"id": fact_id}, {"$set": {"is_featured": new_status}})
+    return {"message": f"Fact {'featured' if new_status else 'unfeatured'}", "is_featured": new_status}
+
+@api_router.delete("/admin/facts/{fact_id}")
+async def admin_delete_fact(fact_id: str, admin: dict = Depends(get_admin_user)):
+    result = await db.facts.delete_one({"id": fact_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Fact not found")
+    await db.votes.delete_many({"fact_id": fact_id})
+    await db.engagement.delete_many({"fact_id": fact_id})
+    return {"message": "Fact deleted"}
+
+@api_router.delete("/admin/users/{user_id}")
+async def admin_delete_user(user_id: str, admin: dict = Depends(get_admin_user)):
+    if user_id == admin["id"]:
+        raise HTTPException(status_code=400, detail="Cannot delete yourself")
+    
+    result = await db.users.delete_one({"id": user_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Delete user's facts and votes
+    await db.facts.delete_many({"author_id": user_id})
+    await db.votes.delete_many({"user_id": user_id})
+    return {"message": "User and their content deleted"}
+
+@api_router.get("/admin/engagement/timeline")
+async def get_engagement_timeline(admin: dict = Depends(get_admin_user), days: int = 7):
+    timeline = []
+    for i in range(days):
+        date = datetime.now(timezone.utc) - timedelta(days=i)
+        date_str = date.strftime("%Y-%m-%d")
+        start = f"{date_str}T00:00:00"
+        end = f"{date_str}T23:59:59"
+        
+        views = await db.engagement.count_documents({
+            "event_type": "view",
+            "created_at": {"$gte": start, "$lte": end}
+        })
+        shares = await db.engagement.count_documents({
+            "event_type": "share", 
+            "created_at": {"$gte": start, "$lte": end}
+        })
+        new_facts = await db.facts.count_documents({
+            "created_at": {"$gte": start, "$lte": end}
+        })
+        
+        timeline.append({
+            "date": date_str,
+            "views": views,
+            "shares": shares,
+            "new_facts": new_facts
+        })
+    
+    return {"timeline": list(reversed(timeline))}
 
 # ============== CATEGORIES ==============
 
