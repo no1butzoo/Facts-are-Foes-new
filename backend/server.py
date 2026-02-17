@@ -46,9 +46,9 @@ if RESEND_API_KEY:
 # Subscription Plans
 SUBSCRIPTION_PLANS = {
     "premium_monthly": {
-        "name": "Premium Monthly",
-        "price": 9.00,
-        "currency": "usd",
+        "name": "Premium Monthly"
+        "price": 9.00
+        "currency": "usd"
         "features": ["Unlimited AI explanations", "Ad-free experience", "Early access", "Premium badge", "Priority support"]
     }
 }
@@ -144,8 +144,8 @@ def verify_password(password: str, hashed: str) -> bool:
 
 def create_token(user_id: str, email: str) -> str:
     payload = {
-        "user_id": user_id,
-        "email": email,
+        "user_id": user_id
+        "email": email
         "exp": datetime.now(timezone.utc) + timedelta(hours=JWT_EXPIRATION_HOURS)
     }
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
@@ -183,9 +183,9 @@ async def send_verification_email(email: str, token: str, origin_url: str):
     """
     
     params = {
-        "from": SENDER_EMAIL,
-        "to": [email],
-        "subject": "Verify Your Email - Facts Are Foes",
+        "from": SENDER_EMAIL
+        "to": [email]
+        "subject": "Verify Your Email - Facts Are Foes"
         "html": html_content
     }
     
@@ -220,15 +220,15 @@ async def register(user: UserCreate, request: Request):
     verification_token = generate_verification_token()
     
     user_doc = {
-        "id": str(uuid.uuid4()),
-        "username": user.username,
-        "email": user.email,
-        "password_hash": hash_password(user.password),
-        "avatar_url": f"https://api.dicebear.com/7.x/shapes/svg?seed={user.username}",
-        "created_at": datetime.now(timezone.utc).isoformat(),
-        "email_verified": False,
-        "verification_token": verification_token,
-        "is_premium": False,
+        "id": str(uuid.uuid4())
+        "username": user.username
+        "email": user.email
+        "password_hash": hash_password(user.password)
+        "avatar_url": f"https://api.dicebear.com/7.x/shapes/svg?seed={user.username}"
+        "created_at": datetime.now(timezone.utc).isoformat()
+        "email_verified": False
+        "verification_token": verification_token
+        "is_premium": False
         "subscription_id": None
     }
     await db.users.insert_one(user_doc)
@@ -244,10 +244,10 @@ async def register(user: UserCreate, request: Request):
             "id": user_doc["id"], 
             "username": user_doc["username"], 
             "email": user_doc["email"], 
-            "avatar_url": user_doc["avatar_url"],
-            "email_verified": user_doc["email_verified"],
+            "avatar_url": user_doc["avatar_url"]
+            "email_verified": user_doc["email_verified"]
             "is_premium": user_doc["is_premium"]
-        },
+        }
         "message": "Registration successful! Please check your email to verify your account."
     }
 
@@ -261,7 +261,7 @@ async def verify_email(req: EmailVerificationRequest):
         return {"message": "Email already verified"}
     
     await db.users.update_one(
-        {"id": user["id"]},
+        {"id": user["id"]}
         {"$set": {"email_verified": True, "verification_token": None}}
     )
     
@@ -279,7 +279,7 @@ async def resend_verification(req: ResendVerificationRequest, request: Request):
     # Generate new token
     new_token = generate_verification_token()
     await db.users.update_one(
-        {"id": user["id"]},
+        {"id": user["id"]}
         {"$set": {"verification_token": new_token}}
     )
     
@@ -304,8 +304,8 @@ async def login(user: UserLogin):
             "id": db_user["id"], 
             "username": db_user["username"], 
             "email": db_user["email"], 
-            "avatar_url": db_user.get("avatar_url"),
-            "email_verified": db_user.get("email_verified", False),
+            "avatar_url": db_user.get("avatar_url")
+            "email_verified": db_user.get("email_verified", False)
             "is_premium": db_user.get("is_premium", False)
         }
     }
@@ -313,12 +313,12 @@ async def login(user: UserLogin):
 @api_router.get("/auth/me", response_model=dict)
 async def get_me(current_user: dict = Depends(get_current_user)):
     return {
-        "id": current_user["id"],
-        "username": current_user["username"],
-        "email": current_user["email"],
-        "avatar_url": current_user.get("avatar_url"),
-        "created_at": current_user["created_at"],
-        "email_verified": current_user.get("email_verified", False),
+        "id": current_user["id"]
+        "username": current_user["username"]
+        "email": current_user["email"]
+        "avatar_url": current_user.get("avatar_url")
+        "created_at": current_user["created_at"]
+        "email_verified": current_user.get("email_verified", False)
         "is_premium": current_user.get("is_premium", False)
     }
 
@@ -333,8 +333,8 @@ async def get_facts(category: Optional[str] = None, featured: Optional[bool] = N
         query["is_featured"] = featured
     if search:
         query["$or"] = [
-            {"title": {"$regex": search, "$options": "i"}},
-            {"false_belief": {"$regex": search, "$options": "i"}},
+            {"title": {"$regex": search, "$options": "i"}}
+            {"false_belief": {"$regex": search, "$options": "i"}}
             {"truth": {"$regex": search, "$options": "i"}}
         ]
     
@@ -351,19 +351,19 @@ async def get_fact(fact_id: str):
 @api_router.post("/facts", response_model=FactResponse)
 async def create_fact(fact: FactCreate, current_user: dict = Depends(get_current_user)):
     fact_doc = {
-        "id": str(uuid.uuid4()),
-        "title": fact.title,
-        "false_belief": fact.false_belief,
-        "truth": fact.truth,
-        "category": fact.category,
-        "source_url": fact.source_url,
-        "image_url": fact.image_url,
-        "ai_explanation": None,
-        "author_id": current_user["id"],
-        "author_username": current_user["username"],
-        "upvotes": 0,
-        "downvotes": 0,
-        "created_at": datetime.now(timezone.utc).isoformat(),
+        "id": str(uuid.uuid4())
+        "title": fact.title
+        "false_belief": fact.false_belief
+        "truth": fact.truth
+        "category": fact.category
+        "source_url": fact.source_url
+        "image_url": fact.image_url
+        "ai_explanation": None
+        "author_id": current_user["id"]
+        "author_username": current_user["username"]
+        "upvotes": 0
+        "downvotes": 0
+        "created_at": datetime.now(timezone.utc).isoformat()
         "is_featured": False
     }
     await db.facts.insert_one(fact_doc)
@@ -418,7 +418,7 @@ async def vote_fact(fact_id: str, vote: VoteCreate, current_user: dict = Depends
         else:
             # Change vote
             await db.votes.update_one(
-                {"fact_id": fact_id, "user_id": current_user["id"]},
+                {"fact_id": fact_id, "user_id": current_user["id"]}
                 {"$set": {"vote_type": vote.vote_type}}
             )
             if vote.vote_type == "up":
@@ -429,10 +429,10 @@ async def vote_fact(fact_id: str, vote: VoteCreate, current_user: dict = Depends
     else:
         # New vote
         await db.votes.insert_one({
-            "id": str(uuid.uuid4()),
-            "fact_id": fact_id,
-            "user_id": current_user["id"],
-            "vote_type": vote.vote_type,
+            "id": str(uuid.uuid4())
+            "fact_id": fact_id
+            "user_id": current_user["id"]
+            "vote_type": vote.vote_type
             "created_at": datetime.now(timezone.utc).isoformat()
         })
         if vote.vote_type == "up":
@@ -459,8 +459,8 @@ async def generate_ai_explanation(fact_id: str):
     
     try:
         chat = LlmChat(
-            api_key=EMERGENT_LLM_KEY,
-            session_id=f"fact-explain-{fact_id}",
+            api_key=EMERGENT_LLM_KEY
+            session_id=f"fact-explain-{fact_id}"
             system_message="You are an expert fact-checker and historian. Provide concise, engaging explanations about why certain beliefs turned out to be wrong. Keep responses under 200 words. Be informative yet entertaining."
         ).with_model("gemini", "gemini-3-flash-preview")
         
@@ -502,10 +502,10 @@ async def get_user_stats(user_id: str):
 @api_router.post("/engagement")
 async def track_engagement(event: EngagementEvent):
     engagement_doc = {
-        "id": str(uuid.uuid4()),
-        "fact_id": event.fact_id,
-        "event_type": event.event_type,
-        "value": event.value,
+        "id": str(uuid.uuid4())
+        "fact_id": event.fact_id
+        "event_type": event.event_type
+        "value": event.value
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     await db.engagement.insert_one(engagement_doc)
@@ -523,7 +523,7 @@ async def get_fact_engagement(fact_id: str):
     views = await db.engagement.count_documents({"fact_id": fact_id, "event_type": "view"})
     shares = await db.engagement.count_documents({"fact_id": fact_id, "event_type": "share"})
     share_breakdown = await db.engagement.aggregate([
-        {"$match": {"fact_id": fact_id, "event_type": "share"}},
+        {"$match": {"fact_id": fact_id, "event_type": "share"}}
         {"$group": {"_id": "$value", "count": {"$sum": 1}}}
     ]).to_list(100)
     return {"views": views, "shares": shares, "share_breakdown": {s["_id"]: s["count"] for s in share_breakdown if s["_id"]}}
@@ -562,14 +562,14 @@ async def get_admin_stats(admin: dict = Depends(get_admin_user)):
     top_facts = await db.facts.find({}, {"_id": 0}).sort("upvotes", -1).limit(5).to_list(5)
     
     return {
-        "total_users": total_users,
-        "total_facts": total_facts,
-        "total_votes": total_votes,
-        "total_views": total_views,
-        "total_shares": total_shares,
-        "category_stats": {c["_id"]: c["count"] for c in category_stats if c["_id"]},
-        "recent_facts": recent_facts,
-        "recent_users": recent_users,
+        "total_users": total_users
+        "total_facts": total_facts
+        "total_votes": total_votes
+        "total_views": total_views
+        "total_shares": total_shares
+        "category_stats": {c["_id"]: c["count"] for c in category_stats if c["_id"]}
+        "recent_facts": recent_facts
+        "recent_users": recent_users
         "top_facts": top_facts
     }
 
@@ -634,7 +634,7 @@ async def get_engagement_timeline(admin: dict = Depends(get_admin_user), days: i
         end = f"{date_str}T23:59:59"
         
         views = await db.engagement.count_documents({
-            "event_type": "view",
+            "event_type": "view"
             "created_at": {"$gte": start, "$lte": end}
         })
         shares = await db.engagement.count_documents({
@@ -646,9 +646,9 @@ async def get_engagement_timeline(admin: dict = Depends(get_admin_user), days: i
         })
         
         timeline.append({
-            "date": date_str,
-            "views": views,
-            "shares": shares,
+            "date": date_str
+            "views": views
+            "shares": shares
             "new_facts": new_facts
         })
     
@@ -657,13 +657,13 @@ async def get_engagement_timeline(admin: dict = Depends(get_admin_user), days: i
 # ============== CATEGORIES ==============
 
 CATEGORIES = [
-    {"id": "science", "name": "Science", "icon": "Atom", "description": "Scientific myths debunked"},
-    {"id": "history", "name": "History", "icon": "Landmark", "description": "Historical misconceptions"},
-    {"id": "health", "name": "Health", "icon": "Heart", "description": "Health myths exposed"},
-    {"id": "nature", "name": "Nature", "icon": "Leaf", "description": "Nature facts revealed"},
-    {"id": "space", "name": "Space", "icon": "Rocket", "description": "Cosmic misconceptions"},
-    {"id": "food", "name": "Food", "icon": "UtensilsCrossed", "description": "Food myths busted"},
-    {"id": "technology", "name": "Technology", "icon": "Cpu", "description": "Tech myths debunked"},
+    {"id": "science", "name": "Science", "icon": "Atom", "description": "Scientific myths debunked"}
+    {"id": "history", "name": "History", "icon": "Landmark", "description": "Historical misconceptions"}
+    {"id": "health", "name": "Health", "icon": "Heart", "description": "Health myths exposed"}
+    {"id": "nature", "name": "Nature", "icon": "Leaf", "description": "Nature facts revealed"}
+    {"id": "space", "name": "Space", "icon": "Rocket", "description": "Cosmic misconceptions"}
+    {"id": "food", "name": "Food", "icon": "UtensilsCrossed", "description": "Food myths busted"}
+    {"id": "technology", "name": "Technology", "icon": "Cpu", "description": "Tech myths debunked"}
     {"id": "psychology", "name": "Psychology", "icon": "Brain", "description": "Mind myths revealed"}
 ]
 
@@ -690,17 +690,16 @@ async def create_checkout_session(req: CheckoutRequest, current_user: dict = Dep
     
     try:
         checkout = StripeCheckout(
-            api_key=STRIPE_API_KEY,
-            account_id=current_user["id"]
+            api_key=STRIPE_API_KEY
         )
         
         checkout_request = CheckoutSessionRequest(
-            product_name=plan["name"],
+            product_name=plan["name"]
             unit_amount=int(plan["price"] * 100),  # Convert to cents
-            currency=plan["currency"],
-            quantity=1,
-            mode="subscription",
-            success_url=f"{req.origin_url}/subscription/success?session_id={{CHECKOUT_SESSION_ID}}",
+            currency=plan["currency"]
+            quantity=1
+            mode="subscription"
+            success_url=f"{req.origin_url}/subscription/success?session_id={{CHECKOUT_SESSION_ID}}"
             cancel_url=f"{req.origin_url}/subscription/cancel"
         )
         
@@ -708,11 +707,11 @@ async def create_checkout_session(req: CheckoutRequest, current_user: dict = Dep
         
         # Store pending subscription
         await db.subscriptions.insert_one({
-            "id": str(uuid.uuid4()),
-            "user_id": current_user["id"],
-            "session_id": response.session_id,
-            "plan_id": req.plan_id,
-            "status": "pending",
+            "id": str(uuid.uuid4())
+            "user_id": current_user["id"]
+            "session_id": response.session_id
+            "plan_id": req.plan_id
+            "status": "pending"
             "created_at": datetime.now(timezone.utc).isoformat()
         })
         
@@ -730,8 +729,7 @@ async def get_subscription_status(session_id: str, current_user: dict = Depends(
     
     try:
         checkout = StripeCheckout(
-            api_key=STRIPE_API_KEY,
-            account_id=current_user["id"]
+            api_key=STRIPE_API_KEY
         )
         
         status: CheckoutStatusResponse = await checkout.get_checkout_status(session_id)
@@ -739,23 +737,23 @@ async def get_subscription_status(session_id: str, current_user: dict = Depends(
         if status.payment_status == "paid":
             # Update user to premium
             await db.users.update_one(
-                {"id": current_user["id"]},
+                {"id": current_user["id"]}
                 {"$set": {
-                    "is_premium": True,
-                    "subscription_id": status.subscription_id,
+                    "is_premium": True
+                    "subscription_id": status.subscription_id
                     "subscription_updated_at": datetime.now(timezone.utc).isoformat()
                 }}
             )
             
             # Update subscription record
             await db.subscriptions.update_one(
-                {"session_id": session_id},
+                {"session_id": session_id}
                 {"$set": {"status": "active", "subscription_id": status.subscription_id}}
             )
         
         return {
-            "status": status.status,
-            "payment_status": status.payment_status,
+            "status": status.status
+            "payment_status": status.payment_status
             "subscription_id": status.subscription_id
         }
     
@@ -767,13 +765,13 @@ async def get_subscription_status(session_id: str, current_user: dict = Depends(
 async def get_my_subscription(current_user: dict = Depends(get_current_user)):
     """Get current user's subscription info"""
     subscription = await db.subscriptions.find_one(
-        {"user_id": current_user["id"], "status": "active"},
+        {"user_id": current_user["id"], "status": "active"}
         {"_id": 0}
     )
     
     return {
-        "is_premium": current_user.get("is_premium", False),
-        "subscription": subscription,
+        "is_premium": current_user.get("is_premium", False)
+        "subscription": subscription
         "email_verified": current_user.get("email_verified", False)
     }
 
@@ -787,123 +785,123 @@ async def seed_data():
     
     sample_facts = [
         {
-            "id": str(uuid.uuid4()),
-            "title": "The Great Wall Myth",
-            "false_belief": "The Great Wall of China is visible from space with the naked eye.",
-            "truth": "The Great Wall is too narrow to be seen from space without aid. Astronauts confirm it's virtually impossible to spot.",
-            "category": "space",
-            "image_url": "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=800",
-            "author_id": "system",
-            "author_username": "FactsAreFoes",
-            "upvotes": 42,
-            "downvotes": 3,
-            "created_at": datetime.now(timezone.utc).isoformat(),
-            "is_featured": True,
+            "id": str(uuid.uuid4())
+            "title": "The Great Wall Myth"
+            "false_belief": "The Great Wall of China is visible from space with the naked eye."
+            "truth": "The Great Wall is too narrow to be seen from space without aid. Astronauts confirm it's virtually impossible to spot."
+            "category": "space"
+            "image_url": "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=800"
+            "author_id": "system"
+            "author_username": "FactsAreFoes"
+            "upvotes": 42
+            "downvotes": 3
+            "created_at": datetime.now(timezone.utc).isoformat()
+            "is_featured": True
             "ai_explanation": None
-        },
+        }
         {
-            "id": str(uuid.uuid4()),
-            "title": "Napoleon's Height",
-            "false_belief": "Napoleon Bonaparte was extremely short.",
-            "truth": "Napoleon was actually 5'7\" (170cm), above average height for his era. The myth came from British propaganda and confusion between French and English inches.",
-            "category": "history",
-            "image_url": "https://images.unsplash.com/photo-1564399579883-451a5d44ec08?w=800",
-            "author_id": "system",
-            "author_username": "FactsAreFoes",
-            "upvotes": 38,
-            "downvotes": 2,
-            "created_at": datetime.now(timezone.utc).isoformat(),
-            "is_featured": True,
+            "id": str(uuid.uuid4())
+            "title": "Napoleon's Height"
+            "false_belief": "Napoleon Bonaparte was extremely short."
+            "truth": "Napoleon was actually 5'7\" (170cm), above average height for his era. The myth came from British propaganda and confusion between French and English inches."
+            "category": "history"
+            "image_url": "https://images.unsplash.com/photo-1564399579883-451a5d44ec08?w=800"
+            "author_id": "system"
+            "author_username": "FactsAreFoes"
+            "upvotes": 38
+            "downvotes": 2
+            "created_at": datetime.now(timezone.utc).isoformat()
+            "is_featured": True
             "ai_explanation": None
-        },
+        }
         {
-            "id": str(uuid.uuid4()),
-            "title": "Goldfish Memory",
-            "false_belief": "Goldfish have a 3-second memory.",
-            "truth": "Goldfish can actually remember things for months. Scientists have trained them to navigate mazes and respond to signals.",
-            "category": "nature",
-            "image_url": "https://images.unsplash.com/photo-1524704654690-b56c05c78a00?w=800",
-            "author_id": "system",
-            "author_username": "FactsAreFoes",
-            "upvotes": 56,
-            "downvotes": 4,
-            "created_at": datetime.now(timezone.utc).isoformat(),
-            "is_featured": True,
+            "id": str(uuid.uuid4())
+            "title": "Goldfish Memory"
+            "false_belief": "Goldfish have a 3-second memory."
+            "truth": "Goldfish can actually remember things for months. Scientists have trained them to navigate mazes and respond to signals."
+            "category": "nature"
+            "image_url": "https://images.unsplash.com/photo-1524704654690-b56c05c78a00?w=800"
+            "author_id": "system"
+            "author_username": "FactsAreFoes"
+            "upvotes": 56
+            "downvotes": 4
+            "created_at": datetime.now(timezone.utc).isoformat()
+            "is_featured": True
             "ai_explanation": None
-        },
+        }
         {
-            "id": str(uuid.uuid4()),
-            "title": "Vikings and Horned Helmets",
-            "false_belief": "Vikings wore horned helmets in battle.",
-            "truth": "There's no historical evidence Vikings wore horned helmets. This myth was popularized by 19th-century romanticized artwork.",
-            "category": "history",
-            "image_url": "https://images.unsplash.com/photo-1599930113854-d6d7fd521f10?w=800",
-            "author_id": "system",
-            "author_username": "FactsAreFoes",
-            "upvotes": 29,
-            "downvotes": 1,
-            "created_at": datetime.now(timezone.utc).isoformat(),
-            "is_featured": False,
+            "id": str(uuid.uuid4())
+            "title": "Vikings and Horned Helmets"
+            "false_belief": "Vikings wore horned helmets in battle."
+            "truth": "There's no historical evidence Vikings wore horned helmets. This myth was popularized by 19th-century romanticized artwork."
+            "category": "history"
+            "image_url": "https://images.unsplash.com/photo-1599930113854-d6d7fd521f10?w=800"
+            "author_id": "system"
+            "author_username": "FactsAreFoes"
+            "upvotes": 29
+            "downvotes": 1
+            "created_at": datetime.now(timezone.utc).isoformat()
+            "is_featured": False
             "ai_explanation": None
-        },
+        }
         {
-            "id": str(uuid.uuid4()),
-            "title": "We Only Use 10% of Our Brain",
-            "false_belief": "Humans only use 10% of their brain capacity.",
-            "truth": "Brain scans show we use virtually every part of our brain. Different regions are active for different tasks, but no area is completely inactive.",
-            "category": "science",
-            "image_url": "https://images.unsplash.com/photo-1559757175-5700dde675bc?w=800",
-            "author_id": "system",
-            "author_username": "FactsAreFoes",
-            "upvotes": 67,
-            "downvotes": 5,
-            "created_at": datetime.now(timezone.utc).isoformat(),
-            "is_featured": True,
+            "id": str(uuid.uuid4())
+            "title": "We Only Use 10% of Our Brain"
+            "false_belief": "Humans only use 10% of their brain capacity."
+            "truth": "Brain scans show we use virtually every part of our brain. Different regions are active for different tasks, but no area is completely inactive."
+            "category": "science"
+            "image_url": "https://images.unsplash.com/photo-1559757175-5700dde675bc?w=800"
+            "author_id": "system"
+            "author_username": "FactsAreFoes"
+            "upvotes": 67
+            "downvotes": 5
+            "created_at": datetime.now(timezone.utc).isoformat()
+            "is_featured": True
             "ai_explanation": None
-        },
+        }
         {
-            "id": str(uuid.uuid4()),
-            "title": "Sugar Makes Kids Hyper",
-            "false_belief": "Sugar causes hyperactivity in children.",
-            "truth": "Multiple studies have found no link between sugar and hyperactivity. The excitement of events where sugar is present (parties, holidays) is the real culprit.",
-            "category": "health",
-            "image_url": "https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=800",
-            "author_id": "system",
-            "author_username": "FactsAreFoes",
-            "upvotes": 45,
-            "downvotes": 8,
-            "created_at": datetime.now(timezone.utc).isoformat(),
-            "is_featured": False,
+            "id": str(uuid.uuid4())
+            "title": "Sugar Makes Kids Hyper"
+            "false_belief": "Sugar causes hyperactivity in children."
+            "truth": "Multiple studies have found no link between sugar and hyperactivity. The excitement of events where sugar is present (parties, holidays) is the real culprit."
+            "category": "health"
+            "image_url": "https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=800"
+            "author_id": "system"
+            "author_username": "FactsAreFoes"
+            "upvotes": 45
+            "downvotes": 8
+            "created_at": datetime.now(timezone.utc).isoformat()
+            "is_featured": False
             "ai_explanation": None
-        },
+        }
         {
-            "id": str(uuid.uuid4()),
-            "title": "Lightning Never Strikes Twice",
-            "false_belief": "Lightning never strikes the same place twice.",
-            "truth": "Lightning frequently strikes the same location multiple times. The Empire State Building is struck about 20-25 times per year.",
-            "category": "nature",
-            "image_url": "https://images.unsplash.com/photo-1461511540115-9d391d05e728?w=800",
-            "author_id": "system",
-            "author_username": "FactsAreFoes",
-            "upvotes": 33,
-            "downvotes": 2,
-            "created_at": datetime.now(timezone.utc).isoformat(),
-            "is_featured": False,
+            "id": str(uuid.uuid4())
+            "title": "Lightning Never Strikes Twice"
+            "false_belief": "Lightning never strikes the same place twice."
+            "truth": "Lightning frequently strikes the same location multiple times. The Empire State Building is struck about 20-25 times per year."
+            "category": "nature"
+            "image_url": "https://images.unsplash.com/photo-1461511540115-9d391d05e728?w=800"
+            "author_id": "system"
+            "author_username": "FactsAreFoes"
+            "upvotes": 33
+            "downvotes": 2
+            "created_at": datetime.now(timezone.utc).isoformat()
+            "is_featured": False
             "ai_explanation": None
-        },
+        }
         {
-            "id": str(uuid.uuid4()),
-            "title": "Carrots Improve Night Vision",
-            "false_belief": "Eating carrots dramatically improves your night vision.",
-            "truth": "This myth was British WWII propaganda to hide their radar technology. Carrots contain vitamin A but won't give you superhuman sight.",
-            "category": "food",
-            "image_url": "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?w=800",
-            "author_id": "system",
-            "author_username": "FactsAreFoes",
-            "upvotes": 51,
-            "downvotes": 3,
-            "created_at": datetime.now(timezone.utc).isoformat(),
-            "is_featured": True,
+            "id": str(uuid.uuid4())
+            "title": "Carrots Improve Night Vision"
+            "false_belief": "Eating carrots dramatically improves your night vision."
+            "truth": "This myth was British WWII propaganda to hide their radar technology. Carrots contain vitamin A but won't give you superhuman sight."
+            "category": "food"
+            "image_url": "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?w=800"
+            "author_id": "system"
+            "author_username": "FactsAreFoes"
+            "upvotes": 51
+            "downvotes": 3
+            "created_at": datetime.now(timezone.utc).isoformat()
+            "is_featured": True
             "ai_explanation": None
         }
     ]
@@ -925,11 +923,11 @@ async def health():
 app.include_router(api_router)
 
 app.add_middleware(
-    CORSMiddleware,
-    allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
-    allow_methods=["*"],
-    allow_headers=["*"],
+    CORSMiddleware
+    allow_credentials=True
+    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(',')
+    allow_methods=["*"]
+    allow_headers=["*"]
 )
 
 @app.on_event("shutdown")
