@@ -435,6 +435,9 @@ class FactsAreFoesAPITester:
         # Admin endpoints (new premium feature)
         self.test_admin_endpoints()
         
+        # Test admin functionality with first user logic
+        self.test_admin_with_first_user()
+        
         # Print final results
         print(f"\n📊 Test Results: {self.tests_passed}/{self.tests_run} passed")
         
