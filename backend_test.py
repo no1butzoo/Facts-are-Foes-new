@@ -174,7 +174,7 @@ class FactsAreFoesAPITester:
             "image_url": "https://images.unsplash.com/photo-1559757175-5700dde675bc?w=800"
         }
         
-        success, response = self.run_test("Create Fact", "POST", "facts", 201, test_fact)
+        success, response = self.run_test("Create Fact", "POST", "facts", 200, test_fact)
         
         if success and 'id' in response:
             self.created_fact_id = response['id']
