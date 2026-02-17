@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Triangle, Menu, X, User, LogOut, Plus, Compass } from 'lucide-react';
+import { Triangle, Menu, X, User, LogOut, Plus, Compass, Shield } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from './ui/button';
 import {
@@ -100,6 +100,12 @@ const Layout = ({ children }) => {
                                                 <Link to="/submit" className="flex items-center gap-2 cursor-pointer sm:hidden" data-testid="submit-link-mobile">
                                                     <Plus className="w-4 h-4" />
                                                     Submit Fact
+                                                </Link>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem asChild>
+                                                <Link to="/admin" className="flex items-center gap-2 cursor-pointer" data-testid="admin-link">
+                                                    <Shield className="w-4 h-4" />
+                                                    Admin Panel
                                                 </Link>
                                             </DropdownMenuItem>
                                             <DropdownMenuSeparator className="bg-white/10" />
