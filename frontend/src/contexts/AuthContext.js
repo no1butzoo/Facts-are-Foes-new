@@ -39,6 +39,12 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const refreshUser = async () => {
+        if (token) {
+            await fetchUser();
+        }
+    };
+
     const login = async (email, password) => {
         const response = await axios.post(`${API}/auth/login`, { email, password });
         const { token: newToken, user: userData } = response.data;
@@ -51,12 +57,12 @@ export const AuthProvider = ({ children }) => {
 
     const register = async (username, email, password) => {
         const response = await axios.post(`${API}/auth/register`, { username, email, password });
-        const { token: newToken, user: userData } = response.data;
+        const { token: newToken, user: userData, message } = response.data;
         localStorage.setItem('token', newToken);
         axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
         setToken(newToken);
         setUser(userData);
-        return userData;
+        return { user: userData, message };
     };
 
     const logout = () => {
@@ -67,7 +73,18 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, token, loading, login, register, logout, isAuthenticated: !!user }}>
+        <AuthContext.Provider value={{ 
+            user, 
+            token, 
+            loading, 
+            login, 
+            register, 
+            logout, 
+            refreshUser,
+            isAuthenticated: !!user,
+            isPremium: user?.is_premium || false,
+            isEmailVerified: user?.email_verified || false
+        }}>
             {children}
         </AuthContext.Provider>
     );
