@@ -202,6 +202,105 @@ const HomePage = () => {
                 </div>
             </section>
 
+            {/* Subscription Section */}
+            <section className="py-24 px-6 bg-background">
+                <div className="max-w-5xl mx-auto">
+                    <div className="text-center mb-16">
+                        <h2 className="font-heading text-4xl md:text-5xl font-bold tracking-tight mb-4">
+                            UNLOCK <span className="text-primary">PREMIUM</span>
+                        </h2>
+                        <p className="text-muted-foreground max-w-2xl mx-auto">
+                            Get unlimited access to AI explanations, exclusive content, and ad-free browsing
+                        </p>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                        {/* Free Tier */}
+                        <div className="p-8 bg-card border border-white/10 flex flex-col">
+                            <div className="mb-6">
+                                <h3 className="font-heading text-2xl uppercase tracking-widest mb-2">Free</h3>
+                                <div className="flex items-baseline gap-1">
+                                    <span className="font-heading text-4xl font-bold">$0</span>
+                                    <span className="text-muted-foreground">/month</span>
+                                </div>
+                            </div>
+                            <ul className="space-y-3 mb-8 flex-1">
+                                <li className="flex items-center gap-3 text-muted-foreground">
+                                    <Check className="w-5 h-5 text-primary" />
+                                    Browse all myths
+                                </li>
+                                <li className="flex items-center gap-3 text-muted-foreground">
+                                    <Check className="w-5 h-5 text-primary" />
+                                    3 AI explanations per day
+                                </li>
+                                <li className="flex items-center gap-3 text-muted-foreground">
+                                    <Check className="w-5 h-5 text-primary" />
+                                    Submit myths
+                                </li>
+                                <li className="flex items-center gap-3 text-muted-foreground">
+                                    <Check className="w-5 h-5 text-primary" />
+                                    Vote on content
+                                </li>
+                            </ul>
+                            <Button variant="outline" className="w-full btn-secondary" disabled>
+                                Current Plan
+                            </Button>
+                        </div>
+
+                        {/* Premium Tier */}
+                        <div className="p-8 bg-card border-2 border-primary relative flex flex-col glow-gold">
+                            <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                                <span className="bg-primary text-primary-foreground px-4 py-1 text-xs uppercase tracking-widest font-bold flex items-center gap-1">
+                                    <Crown className="w-3 h-3" />
+                                    Most Popular
+                                </span>
+                            </div>
+                            <div className="mb-6">
+                                <h3 className="font-heading text-2xl uppercase tracking-widest mb-2 text-primary">Premium</h3>
+                                <div className="flex items-baseline gap-1">
+                                    <span className="font-heading text-4xl font-bold text-primary">$9</span>
+                                    <span className="text-muted-foreground">/month</span>
+                                </div>
+                            </div>
+                            <ul className="space-y-3 mb-8 flex-1">
+                                <li className="flex items-center gap-3">
+                                    <Check className="w-5 h-5 text-primary" />
+                                    Everything in Free
+                                </li>
+                                <li className="flex items-center gap-3">
+                                    <Check className="w-5 h-5 text-primary" />
+                                    <strong>Unlimited</strong> AI explanations
+                                </li>
+                                <li className="flex items-center gap-3">
+                                    <Check className="w-5 h-5 text-primary" />
+                                    Ad-free experience
+                                </li>
+                                <li className="flex items-center gap-3">
+                                    <Check className="w-5 h-5 text-primary" />
+                                    Early access to new myths
+                                </li>
+                                <li className="flex items-center gap-3">
+                                    <Check className="w-5 h-5 text-primary" />
+                                    Premium badge on profile
+                                </li>
+                                <li className="flex items-center gap-3">
+                                    <Check className="w-5 h-5 text-primary" />
+                                    Priority support
+                                </li>
+                            </ul>
+                            <Button 
+                                className="w-full btn-primary"
+                                onClick={() => toast.success('Subscription feature coming soon! 🏛️')}
+                                data-testid="subscribe-btn"
+                            >
+                                <Crown className="w-4 h-4 mr-2" />
+                                Subscribe for $9/month
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             {/* CTA Section */}
             <section className="py-24 px-6 relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-secondary/5" />
