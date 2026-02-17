@@ -337,27 +337,51 @@ class FactsAreFoesAPITester:
         else:
             self.log_test("Engagement Timeline Valid", False, "Invalid timeline response")
         
-    def test_admin_with_first_user(self):
-        """Test admin functionality by creating a fresh user (who should be admin if first)"""
-        print("\n👑 Testing Admin Functionality with First User Logic...")
+    def test_admin_with_admin_email(self):
+        """Test admin functionality with admin email"""
+        print("\n👑 Testing Admin Functionality with Admin Email...")
         
-        # Create a new user with a unique timestamp
+        # Try to create user with admin email
         timestamp = datetime.now().strftime('%H%M%S%f')
         admin_user_data = {
-            "username": f"admin_test_{timestamp}",
-            "email": f"admin_{timestamp}@example.com",
+            "username": f"admin_{timestamp}",
+            "email": "admin@factsarefoes.com",
             "password": "AdminPass123!"
         }
         
-        success, response = self.run_test("Create Admin Test User", "POST", "auth/register", 200, admin_user_data)
+        # First try to register (might fail if email exists)
+        success, response = self.run_test("Create Admin Email User", "POST", "auth/register", 200, admin_user_data)
         
-        if not success or 'token' not in response:
-            print("⚠️ Failed to create admin test user")
+        admin_token = None
+        if success and 'token' in response:
+            admin_token = response['token']
+        else:
+            # Try to login with admin email if registration failed
+            login_data = {
+                "email": "admin@factsarefoes.com",
+                "password": "AdminPass123!"
+            }
+            
+            url = f"{self.base_url}/auth/login"
+            try:
+                login_response = requests.post(url, json=login_data, headers={'Content-Type': 'application/json'})
+                if login_response.status_code == 200:
+                    login_result = login_response.json()
+                    if 'token' in login_result:
+                        admin_token = login_result['token']
+                        self.log_test("Admin Email Login", True)
+                    else:
+                        self.log_test("Admin Email Login", False, "No token in login response")
+                else:
+                    self.log_test("Admin Email Login", False, f"Login failed with status {login_response.status_code}")
+            except Exception as e:
+                self.log_test("Admin Email Login", False, f"Login error: {str(e)}")
+        
+        if not admin_token:
+            print("⚠️ Could not get admin token, testing admin endpoints will be skipped")
             return False
         
-        admin_token = response['token']
-        
-        # Test admin endpoints with this user
+        # Test admin endpoints with admin token
         headers = {'Authorization': f'Bearer {admin_token}'}
         
         # Test admin stats
@@ -365,31 +389,44 @@ class FactsAreFoesAPITester:
         try:
             admin_response = requests.get(url, headers=headers)
             if admin_response.status_code == 200:
-                self.log_test("Admin Access Confirmed", True, "User has admin privileges")
+                self.log_test("Admin Stats Access", True)
                 
-                # Test other admin endpoints
                 stats_data = admin_response.json()
                 if 'total_users' in stats_data and 'total_facts' in stats_data:
-                    self.log_test("Admin Stats Structure Valid", True)
+                    self.log_test("Admin Stats Data Valid", True)
                 
                 # Test admin users endpoint
                 users_response = requests.get(f"{self.base_url}/admin/users?limit=5", headers=headers)
                 if users_response.status_code == 200:
-                    self.log_test("Admin Users Endpoint Working", True)
+                    users_data = users_response.json()
+                    if 'users' in users_data and 'total' in users_data:
+                        self.log_test("Admin Users Endpoint Valid", True)
                 
                 # Test admin facts endpoint
                 facts_response = requests.get(f"{self.base_url}/admin/facts?limit=5", headers=headers)
                 if facts_response.status_code == 200:
-                    self.log_test("Admin Facts Endpoint Working", True)
+                    facts_data = facts_response.json()
+                    if 'facts' in facts_data and 'total' in facts_data:
+                        self.log_test("Admin Facts Endpoint Valid", True)
                 
                 # Test engagement timeline
                 timeline_response = requests.get(f"{self.base_url}/admin/engagement/timeline?days=3", headers=headers)
                 if timeline_response.status_code == 200:
-                    self.log_test("Admin Timeline Endpoint Working", True)
+                    timeline_data = timeline_response.json()
+                    if 'timeline' in timeline_data:
+                        self.log_test("Admin Timeline Endpoint Valid", True)
+                
+                # Test feature toggle if we have a fact ID
+                if hasattr(self, 'test_fact_id') and self.test_fact_id:
+                    feature_response = requests.put(f"{self.base_url}/admin/facts/{self.test_fact_id}/feature", headers=headers)
+                    if feature_response.status_code == 200:
+                        feature_data = feature_response.json()
+                        if 'is_featured' in feature_data:
+                            self.log_test("Admin Feature Toggle Valid", True)
                 
                 return True
             else:
-                self.log_test("Admin Access Check", False, f"Expected admin access, got {admin_response.status_code}")
+                self.log_test("Admin Stats Access", False, f"Expected 200, got {admin_response.status_code}")
                 return False
                 
         except Exception as e:
