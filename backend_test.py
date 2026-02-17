@@ -337,6 +337,168 @@ class FactsAreFoesAPITester:
         else:
             self.log_test("Engagement Timeline Valid", False, "Invalid timeline response")
         
+    def test_subscription_endpoints(self):
+        """Test subscription-related endpoints"""
+        print("\n💳 Testing Subscription Endpoints...")
+        
+        # Test get subscription plans (public endpoint)
+        success, response = self.run_test("Get Subscription Plans", "GET", "subscription/plans", 200)
+        
+        if success and 'plans' in response and 'premium_monthly' in response['plans']:
+            plan = response['plans']['premium_monthly']
+            if 'name' in plan and 'price' in plan and plan['price'] == 9.0:
+                self.log_test("Subscription Plans Data Valid", True)
+            else:
+                self.log_test("Subscription Plans Data Valid", False, "Invalid plan structure")
+        else:
+            self.log_test("Subscription Plans Data Valid", False, "No plans in response")
+        
+        if not self.token:
+            print("⚠️ Skipping authenticated subscription tests - not authenticated")
+            return success
+        
+        # Test create checkout session (requires auth)
+        checkout_data = {
+            "plan_id": "premium_monthly",
+            "origin_url": "https://foe-facts.preview.emergentagent.com"
+        }
+        
+        success, response = self.run_test("Create Checkout Session", "POST", "subscription/create-checkout", 200, checkout_data)
+        
+        session_id = None
+        if success and 'checkout_url' in response and 'session_id' in response:
+            session_id = response['session_id']
+            self.log_test("Checkout Session Data Valid", True)
+        else:
+            self.log_test("Checkout Session Data Valid", False, "Missing checkout_url or session_id")
+        
+        # Test subscription status check (if we have session_id)
+        if session_id:
+            success, response = self.run_test("Get Subscription Status", "GET", f"subscription/status/{session_id}", 200)
+            
+            if success and 'status' in response and 'payment_status' in response:
+                self.log_test("Subscription Status Data Valid", True)
+            else:
+                self.log_test("Subscription Status Data Valid", False, "Invalid status response")
+        
+        # Test my subscription endpoint
+        success, response = self.run_test("Get My Subscription", "GET", "subscription/my-subscription", 200)
+        
+        if success and 'is_premium' in response and 'email_verified' in response:
+            self.log_test("My Subscription Data Valid", True)
+        else:
+            self.log_test("My Subscription Data Valid", False, "Invalid subscription response")
+        
+        return True
+
+    def test_email_verification_endpoints(self):
+        """Test email verification endpoints"""
+        print("\n📧 Testing Email Verification Endpoints...")
+        
+        # Test verify email with invalid token
+        invalid_token_data = {"token": "invalid_token_12345"}
+        success, response = self.run_test("Verify Email Invalid Token", "POST", "auth/verify-email", 400, invalid_token_data)
+        
+        if success:
+            self.log_test("Invalid Token Rejection", True)
+        else:
+            self.log_test("Invalid Token Rejection", False, "Should reject invalid token with 400")
+        
+        # Test resend verification
+        if hasattr(self, 'test_email'):
+            resend_data = {"email": self.test_email}
+            success, response = self.run_test("Resend Verification", "POST", "auth/resend-verification", 200, resend_data)
+            
+            if success and 'message' in response:
+                self.log_test("Resend Verification Valid", True)
+            else:
+                self.log_test("Resend Verification Valid", False, "Invalid resend response")
+        else:
+            print("⚠️ Skipping resend verification - no test email available")
+        
+        # Test resend verification with non-existent email
+        nonexistent_data = {"email": "nonexistent@example.com"}
+        success, response = self.run_test("Resend Verification Non-existent", "POST", "auth/resend-verification", 404, nonexistent_data)
+        
+        if success:
+            self.log_test("Non-existent Email Rejection", True)
+        else:
+            self.log_test("Non-existent Email Rejection", False, "Should reject non-existent email with 404")
+        
+        return True
+
+    def test_auth_registration_enhanced(self):
+        """Test enhanced user registration with new fields"""
+        print("\n👤 Testing Enhanced User Registration...")
+        
+        timestamp = datetime.now().strftime('%H%M%S')
+        test_user_data = {
+            "username": f"testuser_{timestamp}",
+            "email": f"test_{timestamp}@example.com",
+            "password": "TestPass123!"
+        }
+        
+        # Store test email for later use
+        self.test_email = test_user_data["email"]
+        
+        success, response = self.run_test("Enhanced User Registration", "POST", "auth/register", 200, test_user_data)
+        
+        if success and 'token' in response and 'user' in response:
+            user_data = response['user']
+            
+            # Check for new fields
+            if 'email_verified' in user_data and 'is_premium' in user_data:
+                self.log_test("Registration New Fields Present", True)
+                
+                # Check default values
+                if user_data['email_verified'] == False and user_data['is_premium'] == False:
+                    self.log_test("Registration Default Values Correct", True)
+                else:
+                    self.log_test("Registration Default Values Correct", False, f"email_verified: {user_data.get('email_verified')}, is_premium: {user_data.get('is_premium')}")
+            else:
+                self.log_test("Registration New Fields Present", False, "Missing email_verified or is_premium fields")
+            
+            # Check for verification message
+            if 'message' in response and 'verify' in response['message'].lower():
+                self.log_test("Registration Verification Message", True)
+            else:
+                self.log_test("Registration Verification Message", False, "No verification message")
+            
+            self.token = response['token']
+            self.user_id = response['user']['id']
+            return True
+        else:
+            self.log_test("Enhanced Registration Failed", False, "No token or user in response")
+            return False
+
+    def test_auth_login_enhanced(self):
+        """Test enhanced user login with new fields"""
+        print("\n🔐 Testing Enhanced User Login...")
+        
+        if not self.token:
+            print("⚠️ Skipping enhanced login test - no registered user")
+            return False
+            
+        # Test /auth/me endpoint for new fields
+        success, response = self.run_test("Get Current User Enhanced", "GET", "auth/me", 200)
+        
+        if success and 'id' in response:
+            # Check for new fields in /auth/me response
+            if 'email_verified' in response and 'is_premium' in response:
+                self.log_test("Auth Me New Fields Present", True)
+                
+                # Check field types
+                if isinstance(response['email_verified'], bool) and isinstance(response['is_premium'], bool):
+                    self.log_test("Auth Me Field Types Correct", True)
+                else:
+                    self.log_test("Auth Me Field Types Correct", False, f"email_verified type: {type(response['email_verified'])}, is_premium type: {type(response['is_premium'])}")
+            else:
+                self.log_test("Auth Me New Fields Present", False, "Missing email_verified or is_premium fields")
+        else:
+            self.log_test("Enhanced Auth Me Failed", False, "Invalid user data")
+        
+        return success
+
     def test_admin_with_admin_email(self):
         """Test admin functionality with admin email"""
         print("\n👑 Testing Admin Functionality with Admin Email...")
