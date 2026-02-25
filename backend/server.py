@@ -22,9 +22,9 @@ ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
 # MongoDB connection
-mongo_url = os.environ['MONGO_URL']
+mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
 client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+db = client[os.environ.get('DB_NAME', 'test_database')]
 
 # JWT Config
 JWT_SECRET = os.environ.get('JWT_SECRET') or 'facts-are-foes-secret-key-prod-2024-xyz123'
@@ -40,7 +40,7 @@ STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY', '')
 # Resend Email Config
 RESEND_API_KEY = os.environ.get('RESEND_API_KEY', '')
 SENDER_EMAIL = os.environ.get('SENDER_EMAIL', 'onboarding@resend.dev')
-if RESEND_API_KEY:
+if RESEND_API_KEY and RESEND_API_KEY != 're_your_api_key_here':
     resend.api_key = RESEND_API_KEY
 
 # Subscription Plans
@@ -114,15 +114,12 @@ class FactResponse(BaseModel):
     is_featured: bool = False
 
 class VoteCreate(BaseModel):
-    vote_type: str  # "up" or "down"
-
-class AIExplainRequest(BaseModel):
-    fact_id: str
+    vote_type: str
 
 class EngagementEvent(BaseModel):
     fact_id: str
-    event_type: str  # "view", "share", "time_spent"
-    value: Optional[str] = None  # For share: platform name, for time_spent: seconds
+    event_type: str
+    value: Optional[str] = None
 
 class CheckoutRequest(BaseModel):
     plan_id: str
@@ -154,38 +151,24 @@ def generate_verification_token() -> str:
     return secrets.token_urlsafe(32)
 
 async def send_verification_email(email: str, token: str, origin_url: str):
-    """Send email verification link"""
     if not RESEND_API_KEY or RESEND_API_KEY == 're_your_api_key_here':
         logger.warning("Resend API key not configured, skipping email verification")
         return False
     
     verification_url = f"{origin_url}/verify-email?token={token}"
-    
     html_content = f"""
-    <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #020204; color: #E2E8F0; padding: 40px;">
-        <div style="text-align: center; margin-bottom: 30px;">
-            <div style="width: 60px; height: 60px; background: #FFD700; margin: 0 auto; clip-path: polygon(50% 0%, 0% 100%, 100% 100%);"></div>
-            <h1 style="color: #FFD700; font-size: 28px; margin-top: 20px;">FACTS ARE FOES</h1>
-        </div>
-        <h2 style="color: #FFFFFF; text-align: center;">Verify Your Email</h2>
-        <p style="color: #94A3B8; text-align: center; font-size: 16px;">
-            Welcome, seeker of truth! Click the button below to verify your email and unlock the secrets.
-        </p>
-        <div style="text-align: center; margin: 30px 0;">
-            <a href="{verification_url}" style="display: inline-block; background: #FFD700; color: #000000; padding: 15px 40px; text-decoration: none; font-weight: bold; text-transform: uppercase; letter-spacing: 2px;">
-                Verify Email
-            </a>
-        </div>
-        <p style="color: #64748B; text-align: center; font-size: 12px;">
-            If you didn't create an account, you can safely ignore this email.
-        </p>
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #020204; color: #E2E8F0; padding: 40px;">
+        <h1 style="color: #FFD700;">FACTS ARE FOES</h1>
+        <h2 style="color: #FFFFFF;">Verify Your Email</h2>
+        <p>Click the button below to verify your email.</p>
+        <a href="{verification_url}" style="display: inline-block; background: #FFD700; color: #000000; padding: 15px 40px; text-decoration: none; font-weight: bold;">Verify Email</a>
     </div>
     """
     
     params = {
-        "from": SENDER_EMAIL
-        "to": [email]
-        "subject": "Verify Your Email - Facts Are Foes"
+        "from": SENDER_EMAIL,
+        "to": [email],
+        "subject": "Verify Your Email - Facts Are Foes",
         "html": html_content
     }
     
@@ -220,34 +203,33 @@ async def register(user: UserCreate, request: Request):
     verification_token = generate_verification_token()
     
     user_doc = {
-        "id": str(uuid.uuid4())
-        "username": user.username
-        "email": user.email
-        "password_hash": hash_password(user.password)
-        "avatar_url": f"https://api.dicebear.com/7.x/shapes/svg?seed={user.username}"
-        "created_at": datetime.now(timezone.utc).isoformat()
-        "email_verified": False
-        "verification_token": verification_token
-        "is_premium": False
+        "id": str(uuid.uuid4()),
+        "username": user.username,
+        "email": user.email,
+        "password_hash": hash_password(user.password),
+        "avatar_url": f"https://api.dicebear.com/7.x/shapes/svg?seed={user.username}",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "email_verified": False,
+        "verification_token": verification_token,
+        "is_premium": False,
         "subscription_id": None
     }
     await db.users.insert_one(user_doc)
     
-    # Send verification email
     origin = request.headers.get("origin", str(request.base_url).rstrip('/'))
     await send_verification_email(user.email, verification_token, origin)
     
     token = create_token(user_doc["id"], user_doc["email"])
     return {
-        "token": token, 
+        "token": token,
         "user": {
-            "id": user_doc["id"], 
-            "username": user_doc["username"], 
-            "email": user_doc["email"], 
-            "avatar_url": user_doc["avatar_url"]
-            "email_verified": user_doc["email_verified"]
+            "id": user_doc["id"],
+            "username": user_doc["username"],
+            "email": user_doc["email"],
+            "avatar_url": user_doc["avatar_url"],
+            "email_verified": user_doc["email_verified"],
             "is_premium": user_doc["is_premium"]
-        }
+        },
         "message": "Registration successful! Please check your email to verify your account."
     }
 
@@ -261,10 +243,9 @@ async def verify_email(req: EmailVerificationRequest):
         return {"message": "Email already verified"}
     
     await db.users.update_one(
-        {"id": user["id"]}
+        {"id": user["id"]},
         {"$set": {"email_verified": True, "verification_token": None}}
     )
-    
     return {"message": "Email verified successfully!", "email": user["email"]}
 
 @api_router.post("/auth/resend-verification")
@@ -276,20 +257,15 @@ async def resend_verification(req: ResendVerificationRequest, request: Request):
     if user.get("email_verified"):
         return {"message": "Email already verified"}
     
-    # Generate new token
     new_token = generate_verification_token()
-    await db.users.update_one(
-        {"id": user["id"]}
-        {"$set": {"verification_token": new_token}}
-    )
+    await db.users.update_one({"id": user["id"]}, {"$set": {"verification_token": new_token}})
     
     origin = request.headers.get("origin", str(request.base_url).rstrip('/'))
     sent = await send_verification_email(req.email, new_token, origin)
     
     if sent:
         return {"message": "Verification email sent!"}
-    else:
-        return {"message": "Email service not configured. Your account is active."}
+    return {"message": "Email service not configured. Your account is active."}
 
 @api_router.post("/auth/login", response_model=dict)
 async def login(user: UserLogin):
@@ -299,13 +275,13 @@ async def login(user: UserLogin):
     
     token = create_token(db_user["id"], db_user["email"])
     return {
-        "token": token, 
+        "token": token,
         "user": {
-            "id": db_user["id"], 
-            "username": db_user["username"], 
-            "email": db_user["email"], 
-            "avatar_url": db_user.get("avatar_url")
-            "email_verified": db_user.get("email_verified", False)
+            "id": db_user["id"],
+            "username": db_user["username"],
+            "email": db_user["email"],
+            "avatar_url": db_user.get("avatar_url"),
+            "email_verified": db_user.get("email_verified", False),
             "is_premium": db_user.get("is_premium", False)
         }
     }
@@ -313,12 +289,12 @@ async def login(user: UserLogin):
 @api_router.get("/auth/me", response_model=dict)
 async def get_me(current_user: dict = Depends(get_current_user)):
     return {
-        "id": current_user["id"]
-        "username": current_user["username"]
-        "email": current_user["email"]
-        "avatar_url": current_user.get("avatar_url")
-        "created_at": current_user["created_at"]
-        "email_verified": current_user.get("email_verified", False)
+        "id": current_user["id"],
+        "username": current_user["username"],
+        "email": current_user["email"],
+        "avatar_url": current_user.get("avatar_url"),
+        "created_at": current_user["created_at"],
+        "email_verified": current_user.get("email_verified", False),
         "is_premium": current_user.get("is_premium", False)
     }
 
@@ -333,8 +309,8 @@ async def get_facts(category: Optional[str] = None, featured: Optional[bool] = N
         query["is_featured"] = featured
     if search:
         query["$or"] = [
-            {"title": {"$regex": search, "$options": "i"}}
-            {"false_belief": {"$regex": search, "$options": "i"}}
+            {"title": {"$regex": search, "$options": "i"}},
+            {"false_belief": {"$regex": search, "$options": "i"}},
             {"truth": {"$regex": search, "$options": "i"}}
         ]
     
@@ -351,19 +327,19 @@ async def get_fact(fact_id: str):
 @api_router.post("/facts", response_model=FactResponse)
 async def create_fact(fact: FactCreate, current_user: dict = Depends(get_current_user)):
     fact_doc = {
-        "id": str(uuid.uuid4())
-        "title": fact.title
-        "false_belief": fact.false_belief
-        "truth": fact.truth
-        "category": fact.category
-        "source_url": fact.source_url
-        "image_url": fact.image_url
-        "ai_explanation": None
-        "author_id": current_user["id"]
-        "author_username": current_user["username"]
-        "upvotes": 0
-        "downvotes": 0
-        "created_at": datetime.now(timezone.utc).isoformat()
+        "id": str(uuid.uuid4()),
+        "title": fact.title,
+        "false_belief": fact.false_belief,
+        "truth": fact.truth,
+        "category": fact.category,
+        "source_url": fact.source_url,
+        "image_url": fact.image_url,
+        "ai_explanation": None,
+        "author_id": current_user["id"],
+        "author_username": current_user["username"],
+        "upvotes": 0,
+        "downvotes": 0,
+        "created_at": datetime.now(timezone.utc).isoformat(),
         "is_featured": False
     }
     await db.facts.insert_one(fact_doc)
@@ -408,7 +384,6 @@ async def vote_fact(fact_id: str, vote: VoteCreate, current_user: dict = Depends
     
     if existing_vote:
         if existing_vote["vote_type"] == vote.vote_type:
-            # Remove vote
             await db.votes.delete_one({"fact_id": fact_id, "user_id": current_user["id"]})
             if vote.vote_type == "up":
                 await db.facts.update_one({"id": fact_id}, {"$inc": {"upvotes": -1}})
@@ -416,9 +391,8 @@ async def vote_fact(fact_id: str, vote: VoteCreate, current_user: dict = Depends
                 await db.facts.update_one({"id": fact_id}, {"$inc": {"downvotes": -1}})
             return {"message": "Vote removed"}
         else:
-            # Change vote
             await db.votes.update_one(
-                {"fact_id": fact_id, "user_id": current_user["id"]}
+                {"fact_id": fact_id, "user_id": current_user["id"]},
                 {"$set": {"vote_type": vote.vote_type}}
             )
             if vote.vote_type == "up":
@@ -427,12 +401,11 @@ async def vote_fact(fact_id: str, vote: VoteCreate, current_user: dict = Depends
                 await db.facts.update_one({"id": fact_id}, {"$inc": {"upvotes": -1, "downvotes": 1}})
             return {"message": "Vote changed"}
     else:
-        # New vote
         await db.votes.insert_one({
-            "id": str(uuid.uuid4())
-            "fact_id": fact_id
-            "user_id": current_user["id"]
-            "vote_type": vote.vote_type
+            "id": str(uuid.uuid4()),
+            "fact_id": fact_id,
+            "user_id": current_user["id"],
+            "vote_type": vote.vote_type,
             "created_at": datetime.now(timezone.utc).isoformat()
         })
         if vote.vote_type == "up":
@@ -459,9 +432,9 @@ async def generate_ai_explanation(fact_id: str):
     
     try:
         chat = LlmChat(
-            api_key=EMERGENT_LLM_KEY
-            session_id=f"fact-explain-{fact_id}"
-            system_message="You are an expert fact-checker and historian. Provide concise, engaging explanations about why certain beliefs turned out to be wrong. Keep responses under 200 words. Be informative yet entertaining."
+            api_key=EMERGENT_LLM_KEY,
+            session_id=f"fact-explain-{fact_id}",
+            system_message="You are an expert fact-checker. Provide concise explanations about why certain beliefs turned out to be wrong. Keep responses under 200 words."
         ).with_model("gemini", "gemini-3-flash-preview")
         
         prompt = f"""Explain why this common belief turned out to be false:
@@ -470,17 +443,46 @@ FALSE BELIEF: {fact['false_belief']}
 
 THE TRUTH: {fact['truth']}
 
-Provide a brief, engaging explanation of how this misconception originated and why the truth matters."""
+Provide a brief explanation of how this misconception originated and why the truth matters."""
         
         user_message = UserMessage(text=prompt)
         explanation = await chat.send_message(user_message)
         
         await db.facts.update_one({"id": fact_id}, {"$set": {"ai_explanation": explanation}})
-        
         return {"explanation": explanation}
     except Exception as e:
         logger.error(f"AI explanation error: {e}")
         raise HTTPException(status_code=500, detail="Failed to generate explanation")
+
+# ============== ENGAGEMENT ROUTES ==============
+
+@api_router.post("/engagement")
+async def track_engagement(event: EngagementEvent):
+    engagement_doc = {
+        "id": str(uuid.uuid4()),
+        "fact_id": event.fact_id,
+        "event_type": event.event_type,
+        "value": event.value,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.engagement.insert_one(engagement_doc)
+    
+    if event.event_type == "view":
+        await db.facts.update_one({"id": event.fact_id}, {"$inc": {"views": 1}})
+    elif event.event_type == "share":
+        await db.facts.update_one({"id": event.fact_id}, {"$inc": {"shares": 1}})
+    
+    return {"message": "Engagement tracked"}
+
+@api_router.get("/facts/{fact_id}/engagement")
+async def get_fact_engagement(fact_id: str):
+    views = await db.engagement.count_documents({"fact_id": fact_id, "event_type": "view"})
+    shares = await db.engagement.count_documents({"fact_id": fact_id, "event_type": "share"})
+    share_breakdown = await db.engagement.aggregate([
+        {"$match": {"fact_id": fact_id, "event_type": "share"}},
+        {"$group": {"_id": "$value", "count": {"$sum": 1}}}
+    ]).to_list(100)
+    return {"views": views, "shares": shares, "share_breakdown": {s["_id"]: s["count"] for s in share_breakdown if s["_id"]}}
 
 # ============== USER ROUTES ==============
 
@@ -497,44 +499,117 @@ async def get_user_stats(user_id: str):
     total_downvotes = sum(f.get("downvotes", 0) for f in user_facts)
     return {"total_facts": total_facts, "total_upvotes": total_upvotes, "total_downvotes": total_downvotes}
 
-# ============== ENGAGEMENT TRACKING ==============
+# ============== CATEGORIES ==============
 
-@api_router.post("/engagement")
-async def track_engagement(event: EngagementEvent):
-    engagement_doc = {
-        "id": str(uuid.uuid4())
-        "fact_id": event.fact_id
-        "event_type": event.event_type
-        "value": event.value
-        "created_at": datetime.now(timezone.utc).isoformat()
+CATEGORIES = [
+    {"id": "science", "name": "Science", "icon": "Atom", "description": "Scientific myths debunked"},
+    {"id": "history", "name": "History", "icon": "Landmark", "description": "Historical misconceptions"},
+    {"id": "health", "name": "Health", "icon": "Heart", "description": "Health myths exposed"},
+    {"id": "nature", "name": "Nature", "icon": "Leaf", "description": "Nature facts revealed"},
+    {"id": "space", "name": "Space", "icon": "Rocket", "description": "Cosmic misconceptions"},
+    {"id": "food", "name": "Food", "icon": "UtensilsCrossed", "description": "Food myths busted"},
+    {"id": "technology", "name": "Technology", "icon": "Cpu", "description": "Tech myths debunked"},
+    {"id": "psychology", "name": "Psychology", "icon": "Brain", "description": "Mind myths revealed"}
+]
+
+@api_router.get("/categories")
+async def get_categories():
+    return CATEGORIES
+
+# ============== STRIPE SUBSCRIPTION ROUTES ==============
+
+@api_router.get("/subscription/plans")
+async def get_subscription_plans():
+    return {"plans": SUBSCRIPTION_PLANS}
+
+@api_router.post("/subscription/create-checkout")
+async def create_checkout_session(req: CheckoutRequest, current_user: dict = Depends(get_current_user)):
+    if not STRIPE_API_KEY:
+        raise HTTPException(status_code=500, detail="Stripe not configured")
+    
+    plan = SUBSCRIPTION_PLANS.get(req.plan_id)
+    if not plan:
+        raise HTTPException(status_code=400, detail="Invalid plan ID")
+    
+    try:
+        checkout = StripeCheckout(api_key=STRIPE_API_KEY, account_id=current_user["id"])
+        
+        checkout_request = CheckoutSessionRequest(
+            product_name=plan["name"],
+            unit_amount=int(plan["price"] * 100),
+            currency=plan["currency"],
+            quantity=1,
+            mode="subscription",
+            success_url=f"{req.origin_url}/subscription/success?session_id={{CHECKOUT_SESSION_ID}}",
+            cancel_url=f"{req.origin_url}/subscription/cancel"
+        )
+        
+        response: CheckoutSessionResponse = await checkout.create_checkout_session(checkout_request)
+        
+        await db.subscriptions.insert_one({
+            "id": str(uuid.uuid4()),
+            "user_id": current_user["id"],
+            "session_id": response.session_id,
+            "plan_id": req.plan_id,
+            "status": "pending",
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+        
+        return {"checkout_url": response.checkout_url, "session_id": response.session_id}
+    except Exception as e:
+        logger.error(f"Stripe checkout error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create checkout session")
+
+@api_router.get("/subscription/status/{session_id}")
+async def get_subscription_status(session_id: str, current_user: dict = Depends(get_current_user)):
+    if not STRIPE_API_KEY:
+        raise HTTPException(status_code=500, detail="Stripe not configured")
+    
+    try:
+        checkout = StripeCheckout(api_key=STRIPE_API_KEY, account_id=current_user["id"])
+        status: CheckoutStatusResponse = await checkout.get_checkout_status(session_id)
+        
+        if status.payment_status == "paid":
+            await db.users.update_one(
+                {"id": current_user["id"]},
+                {"$set": {
+                    "is_premium": True,
+                    "subscription_id": status.subscription_id,
+                    "subscription_updated_at": datetime.now(timezone.utc).isoformat()
+                }}
+            )
+            await db.subscriptions.update_one(
+                {"session_id": session_id},
+                {"$set": {"status": "active", "subscription_id": status.subscription_id}}
+            )
+        
+        return {
+            "status": status.status,
+            "payment_status": status.payment_status,
+            "subscription_id": status.subscription_id
+        }
+    except Exception as e:
+        logger.error(f"Stripe status check error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to check subscription status")
+
+@api_router.get("/subscription/my-subscription")
+async def get_my_subscription(current_user: dict = Depends(get_current_user)):
+    subscription = await db.subscriptions.find_one(
+        {"user_id": current_user["id"], "status": "active"},
+        {"_id": 0}
+    )
+    return {
+        "is_premium": current_user.get("is_premium", False),
+        "subscription": subscription,
+        "email_verified": current_user.get("email_verified", False)
     }
-    await db.engagement.insert_one(engagement_doc)
-    
-    # Update fact view count if it's a view event
-    if event.event_type == "view":
-        await db.facts.update_one({"id": event.fact_id}, {"$inc": {"views": 1}})
-    elif event.event_type == "share":
-        await db.facts.update_one({"id": event.fact_id}, {"$inc": {"shares": 1}})
-    
-    return {"message": "Engagement tracked"}
-
-@api_router.get("/facts/{fact_id}/engagement")
-async def get_fact_engagement(fact_id: str):
-    views = await db.engagement.count_documents({"fact_id": fact_id, "event_type": "view"})
-    shares = await db.engagement.count_documents({"fact_id": fact_id, "event_type": "share"})
-    share_breakdown = await db.engagement.aggregate([
-        {"$match": {"fact_id": fact_id, "event_type": "share"}}
-        {"$group": {"_id": "$value", "count": {"$sum": 1}}}
-    ]).to_list(100)
-    return {"views": views, "shares": shares, "share_breakdown": {s["_id"]: s["count"] for s in share_breakdown if s["_id"]}}
 
 # ============== ADMIN ROUTES ==============
 
-ADMIN_EMAILS = ["admin@factsarefoes.com"]  # Add admin emails here
+ADMIN_EMAILS = ["admin@factsarefoes.com"]
 
 async def get_admin_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
     user = await get_current_user(credentials)
-    # For demo purposes, first registered user or specific emails are admin
     first_user = await db.users.find_one({}, {"_id": 0}, sort=[("created_at", 1)])
     if user["email"] in ADMIN_EMAILS or (first_user and user["id"] == first_user["id"]):
         return user
@@ -548,28 +623,25 @@ async def get_admin_stats(admin: dict = Depends(get_admin_user)):
     total_views = await db.engagement.count_documents({"event_type": "view"})
     total_shares = await db.engagement.count_documents({"event_type": "share"})
     
-    # Get facts by category
     category_stats = await db.facts.aggregate([
         {"$group": {"_id": "$category", "count": {"$sum": 1}}}
     ]).to_list(100)
     
-    # Get recent activity (last 7 days)
     week_ago = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()
     recent_facts = await db.facts.count_documents({"created_at": {"$gte": week_ago}})
     recent_users = await db.users.count_documents({"created_at": {"$gte": week_ago}})
     
-    # Top facts by engagement
     top_facts = await db.facts.find({}, {"_id": 0}).sort("upvotes", -1).limit(5).to_list(5)
     
     return {
-        "total_users": total_users
-        "total_facts": total_facts
-        "total_votes": total_votes
-        "total_views": total_views
-        "total_shares": total_shares
-        "category_stats": {c["_id"]: c["count"] for c in category_stats if c["_id"]}
-        "recent_facts": recent_facts
-        "recent_users": recent_users
+        "total_users": total_users,
+        "total_facts": total_facts,
+        "total_votes": total_votes,
+        "total_views": total_views,
+        "total_shares": total_shares,
+        "category_stats": {c["_id"]: c["count"] for c in category_stats if c["_id"]},
+        "recent_facts": recent_facts,
+        "recent_users": recent_users,
         "top_facts": top_facts
     }
 
@@ -619,7 +691,6 @@ async def admin_delete_user(user_id: str, admin: dict = Depends(get_admin_user))
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="User not found")
     
-    # Delete user's facts and votes
     await db.facts.delete_many({"author_id": user_id})
     await db.votes.delete_many({"user_id": user_id})
     return {"message": "User and their content deleted"}
@@ -634,11 +705,11 @@ async def get_engagement_timeline(admin: dict = Depends(get_admin_user), days: i
         end = f"{date_str}T23:59:59"
         
         views = await db.engagement.count_documents({
-            "event_type": "view"
+            "event_type": "view",
             "created_at": {"$gte": start, "$lte": end}
         })
         shares = await db.engagement.count_documents({
-            "event_type": "share", 
+            "event_type": "share",
             "created_at": {"$gte": start, "$lte": end}
         })
         new_facts = await db.facts.count_documents({
@@ -646,134 +717,13 @@ async def get_engagement_timeline(admin: dict = Depends(get_admin_user), days: i
         })
         
         timeline.append({
-            "date": date_str
-            "views": views
-            "shares": shares
+            "date": date_str,
+            "views": views,
+            "shares": shares,
             "new_facts": new_facts
         })
     
     return {"timeline": list(reversed(timeline))}
-
-# ============== CATEGORIES ==============
-
-CATEGORIES = [
-    {"id": "science", "name": "Science", "icon": "Atom", "description": "Scientific myths debunked"}
-    {"id": "history", "name": "History", "icon": "Landmark", "description": "Historical misconceptions"}
-    {"id": "health", "name": "Health", "icon": "Heart", "description": "Health myths exposed"}
-    {"id": "nature", "name": "Nature", "icon": "Leaf", "description": "Nature facts revealed"}
-    {"id": "space", "name": "Space", "icon": "Rocket", "description": "Cosmic misconceptions"}
-    {"id": "food", "name": "Food", "icon": "UtensilsCrossed", "description": "Food myths busted"}
-    {"id": "technology", "name": "Technology", "icon": "Cpu", "description": "Tech myths debunked"}
-    {"id": "psychology", "name": "Psychology", "icon": "Brain", "description": "Mind myths revealed"}
-]
-
-@api_router.get("/categories")
-async def get_categories():
-    return CATEGORIES
-
-# ============== STRIPE SUBSCRIPTION ROUTES ==============
-
-@api_router.get("/subscription/plans")
-async def get_subscription_plans():
-    """Get available subscription plans"""
-    return {"plans": SUBSCRIPTION_PLANS}
-
-@api_router.post("/subscription/create-checkout")
-async def create_checkout_session(req: CheckoutRequest, current_user: dict = Depends(get_current_user)):
-    """Create a Stripe checkout session for subscription"""
-    if not STRIPE_API_KEY:
-        raise HTTPException(status_code=500, detail="Stripe not configured")
-    
-    plan = SUBSCRIPTION_PLANS.get(req.plan_id)
-    if not plan:
-        raise HTTPException(status_code=400, detail="Invalid plan ID")
-    
-    try:
-        checkout = StripeCheckout(
-            api_key=STRIPE_API_KEY
-        )
-        
-        checkout_request = CheckoutSessionRequest(
-            product_name=plan["name"]
-            unit_amount=int(plan["price"] * 100),  # Convert to cents
-            currency=plan["currency"]
-            quantity=1
-            mode="subscription"
-            success_url=f"{req.origin_url}/subscription/success?session_id={{CHECKOUT_SESSION_ID}}"
-            cancel_url=f"{req.origin_url}/subscription/cancel"
-        )
-        
-        response: CheckoutSessionResponse = await checkout.create_checkout_session(checkout_request)
-        
-        # Store pending subscription
-        await db.subscriptions.insert_one({
-            "id": str(uuid.uuid4())
-            "user_id": current_user["id"]
-            "session_id": response.session_id
-            "plan_id": req.plan_id
-            "status": "pending"
-            "created_at": datetime.now(timezone.utc).isoformat()
-        })
-        
-        return {"checkout_url": response.checkout_url, "session_id": response.session_id}
-    
-    except Exception as e:
-        logger.error(f"Stripe checkout error: {e}")
-        raise HTTPException(status_code=500, detail="Failed to create checkout session")
-
-@api_router.get("/subscription/status/{session_id}")
-async def get_subscription_status(session_id: str, current_user: dict = Depends(get_current_user)):
-    """Check subscription status by session ID"""
-    if not STRIPE_API_KEY:
-        raise HTTPException(status_code=500, detail="Stripe not configured")
-    
-    try:
-        checkout = StripeCheckout(
-            api_key=STRIPE_API_KEY
-        )
-        
-        status: CheckoutStatusResponse = await checkout.get_checkout_status(session_id)
-        
-        if status.payment_status == "paid":
-            # Update user to premium
-            await db.users.update_one(
-                {"id": current_user["id"]}
-                {"$set": {
-                    "is_premium": True
-                    "subscription_id": status.subscription_id
-                    "subscription_updated_at": datetime.now(timezone.utc).isoformat()
-                }}
-            )
-            
-            # Update subscription record
-            await db.subscriptions.update_one(
-                {"session_id": session_id}
-                {"$set": {"status": "active", "subscription_id": status.subscription_id}}
-            )
-        
-        return {
-            "status": status.status
-            "payment_status": status.payment_status
-            "subscription_id": status.subscription_id
-        }
-    
-    except Exception as e:
-        logger.error(f"Stripe status check error: {e}")
-        raise HTTPException(status_code=500, detail="Failed to check subscription status")
-
-@api_router.get("/subscription/my-subscription")
-async def get_my_subscription(current_user: dict = Depends(get_current_user)):
-    """Get current user's subscription info"""
-    subscription = await db.subscriptions.find_one(
-        {"user_id": current_user["id"], "status": "active"}
-        {"_id": 0}
-    )
-    
-    return {
-        "is_premium": current_user.get("is_premium", False)
-        "subscription": subscription
-        "email_verified": current_user.get("email_verified", False)
-    }
 
 # ============== SEED DATA ==============
 
@@ -785,123 +735,78 @@ async def seed_data():
     
     sample_facts = [
         {
-            "id": str(uuid.uuid4())
-            "title": "The Great Wall Myth"
-            "false_belief": "The Great Wall of China is visible from space with the naked eye."
-            "truth": "The Great Wall is too narrow to be seen from space without aid. Astronauts confirm it's virtually impossible to spot."
-            "category": "space"
-            "image_url": "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=800"
-            "author_id": "system"
-            "author_username": "FactsAreFoes"
-            "upvotes": 42
-            "downvotes": 3
-            "created_at": datetime.now(timezone.utc).isoformat()
-            "is_featured": True
+            "id": str(uuid.uuid4()),
+            "title": "The Great Wall Myth",
+            "false_belief": "The Great Wall of China is visible from space with the naked eye.",
+            "truth": "The Great Wall is too narrow to be seen from space without aid. Astronauts confirm it's virtually impossible to spot.",
+            "category": "space",
+            "image_url": "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=800",
+            "author_id": "system",
+            "author_username": "FactsAreFoes",
+            "upvotes": 42,
+            "downvotes": 3,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "is_featured": True,
             "ai_explanation": None
-        }
+        },
         {
-            "id": str(uuid.uuid4())
-            "title": "Napoleon's Height"
-            "false_belief": "Napoleon Bonaparte was extremely short."
-            "truth": "Napoleon was actually 5'7\" (170cm), above average height for his era. The myth came from British propaganda and confusion between French and English inches."
-            "category": "history"
-            "image_url": "https://images.unsplash.com/photo-1564399579883-451a5d44ec08?w=800"
-            "author_id": "system"
-            "author_username": "FactsAreFoes"
-            "upvotes": 38
-            "downvotes": 2
-            "created_at": datetime.now(timezone.utc).isoformat()
-            "is_featured": True
+            "id": str(uuid.uuid4()),
+            "title": "Napoleon's Height",
+            "false_belief": "Napoleon Bonaparte was extremely short.",
+            "truth": "Napoleon was actually 5'7\" (170cm), above average height for his era. The myth came from British propaganda.",
+            "category": "history",
+            "image_url": "https://images.unsplash.com/photo-1564399579883-451a5d44ec08?w=800",
+            "author_id": "system",
+            "author_username": "FactsAreFoes",
+            "upvotes": 38,
+            "downvotes": 2,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "is_featured": True,
             "ai_explanation": None
-        }
+        },
         {
-            "id": str(uuid.uuid4())
-            "title": "Goldfish Memory"
-            "false_belief": "Goldfish have a 3-second memory."
-            "truth": "Goldfish can actually remember things for months. Scientists have trained them to navigate mazes and respond to signals."
-            "category": "nature"
-            "image_url": "https://images.unsplash.com/photo-1524704654690-b56c05c78a00?w=800"
-            "author_id": "system"
-            "author_username": "FactsAreFoes"
-            "upvotes": 56
-            "downvotes": 4
-            "created_at": datetime.now(timezone.utc).isoformat()
-            "is_featured": True
+            "id": str(uuid.uuid4()),
+            "title": "Goldfish Memory",
+            "false_belief": "Goldfish have a 3-second memory.",
+            "truth": "Goldfish can actually remember things for months. Scientists have trained them to navigate mazes.",
+            "category": "nature",
+            "image_url": "https://images.unsplash.com/photo-1524704654690-b56c05c78a00?w=800",
+            "author_id": "system",
+            "author_username": "FactsAreFoes",
+            "upvotes": 56,
+            "downvotes": 4,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "is_featured": True,
             "ai_explanation": None
-        }
+        },
         {
-            "id": str(uuid.uuid4())
-            "title": "Vikings and Horned Helmets"
-            "false_belief": "Vikings wore horned helmets in battle."
-            "truth": "There's no historical evidence Vikings wore horned helmets. This myth was popularized by 19th-century romanticized artwork."
-            "category": "history"
-            "image_url": "https://images.unsplash.com/photo-1599930113854-d6d7fd521f10?w=800"
-            "author_id": "system"
-            "author_username": "FactsAreFoes"
-            "upvotes": 29
-            "downvotes": 1
-            "created_at": datetime.now(timezone.utc).isoformat()
-            "is_featured": False
+            "id": str(uuid.uuid4()),
+            "title": "We Only Use 10% of Our Brain",
+            "false_belief": "Humans only use 10% of their brain capacity.",
+            "truth": "Brain scans show we use virtually every part of our brain. Different regions are active for different tasks.",
+            "category": "science",
+            "image_url": "https://images.unsplash.com/photo-1559757175-5700dde675bc?w=800",
+            "author_id": "system",
+            "author_username": "FactsAreFoes",
+            "upvotes": 67,
+            "downvotes": 5,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "is_featured": True,
             "ai_explanation": None
-        }
+        },
         {
-            "id": str(uuid.uuid4())
-            "title": "We Only Use 10% of Our Brain"
-            "false_belief": "Humans only use 10% of their brain capacity."
-            "truth": "Brain scans show we use virtually every part of our brain. Different regions are active for different tasks, but no area is completely inactive."
-            "category": "science"
-            "image_url": "https://images.unsplash.com/photo-1559757175-5700dde675bc?w=800"
-            "author_id": "system"
-            "author_username": "FactsAreFoes"
-            "upvotes": 67
-            "downvotes": 5
-            "created_at": datetime.now(timezone.utc).isoformat()
-            "is_featured": True
-            "ai_explanation": None
-        }
-        {
-            "id": str(uuid.uuid4())
-            "title": "Sugar Makes Kids Hyper"
-            "false_belief": "Sugar causes hyperactivity in children."
-            "truth": "Multiple studies have found no link between sugar and hyperactivity. The excitement of events where sugar is present (parties, holidays) is the real culprit."
-            "category": "health"
-            "image_url": "https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=800"
-            "author_id": "system"
-            "author_username": "FactsAreFoes"
-            "upvotes": 45
-            "downvotes": 8
-            "created_at": datetime.now(timezone.utc).isoformat()
-            "is_featured": False
-            "ai_explanation": None
-        }
-        {
-            "id": str(uuid.uuid4())
-            "title": "Lightning Never Strikes Twice"
-            "false_belief": "Lightning never strikes the same place twice."
-            "truth": "Lightning frequently strikes the same location multiple times. The Empire State Building is struck about 20-25 times per year."
-            "category": "nature"
-            "image_url": "https://images.unsplash.com/photo-1461511540115-9d391d05e728?w=800"
-            "author_id": "system"
-            "author_username": "FactsAreFoes"
-            "upvotes": 33
-            "downvotes": 2
-            "created_at": datetime.now(timezone.utc).isoformat()
-            "is_featured": False
-            "ai_explanation": None
-        }
-        {
-            "id": str(uuid.uuid4())
-            "title": "Carrots Improve Night Vision"
-            "false_belief": "Eating carrots dramatically improves your night vision."
-            "truth": "This myth was British WWII propaganda to hide their radar technology. Carrots contain vitamin A but won't give you superhuman sight."
-            "category": "food"
-            "image_url": "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?w=800"
-            "author_id": "system"
-            "author_username": "FactsAreFoes"
-            "upvotes": 51
-            "downvotes": 3
-            "created_at": datetime.now(timezone.utc).isoformat()
-            "is_featured": True
+            "id": str(uuid.uuid4()),
+            "title": "Carrots Improve Night Vision",
+            "false_belief": "Eating carrots dramatically improves your night vision.",
+            "truth": "This myth was British WWII propaganda to hide their radar technology. Carrots contain vitamin A but won't give you superhuman sight.",
+            "category": "food",
+            "image_url": "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?w=800",
+            "author_id": "system",
+            "author_username": "FactsAreFoes",
+            "upvotes": 51,
+            "downvotes": 3,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "is_featured": True,
             "ai_explanation": None
         }
     ]
@@ -923,11 +828,11 @@ async def health():
 app.include_router(api_router)
 
 app.add_middleware(
-    CORSMiddleware
-    allow_credentials=True
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(',')
-    allow_methods=["*"]
-    allow_headers=["*"]
+    CORSMiddleware,
+    allow_credentials=True,
+    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 @app.on_event("shutdown")
