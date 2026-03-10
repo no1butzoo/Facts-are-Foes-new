@@ -14,7 +14,15 @@ import secrets
 from datetime import datetime, timezone, timedelta
 import bcrypt
 import jwt
-import resend
+
+# Optional imports with fallbacks
+try:
+    import resend
+    RESEND_AVAILABLE = True
+except ImportError:
+    RESEND_AVAILABLE = False
+    resend = None
+
 from emergentintegrations.llm.chat import LlmChat, UserMessage
 from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionResponse, CheckoutStatusResponse, CheckoutSessionRequest
 
@@ -40,7 +48,7 @@ STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY', '')
 # Resend Email Config
 RESEND_API_KEY = os.environ.get('RESEND_API_KEY', '')
 SENDER_EMAIL = os.environ.get('SENDER_EMAIL', 'onboarding@resend.dev')
-if RESEND_API_KEY and RESEND_API_KEY != 're_your_api_key_here':
+if RESEND_AVAILABLE and RESEND_API_KEY and RESEND_API_KEY != 're_your_api_key_here':
     resend.api_key = RESEND_API_KEY
 
 # Subscription Plans
