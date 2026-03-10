@@ -29,16 +29,29 @@ from emergentintegrations.payments.stripe.checkout import StripeCheckout, Checko
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# MongoDB connection
-mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
+# Configure logging FIRST before any logging calls
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
+# MongoDB connection - use environment variables with proper fallbacks for production
+mongo_url = os.environ.get('MONGO_URL')
+if not mongo_url:
+    mongo_url = 'mongodb://localhost:27017'
+    logger.warning("MONGO_URL not set, using localhost (development mode)")
+
+db_name = os.environ.get('DB_NAME')
+if not db_name:
+    db_name = 'test_database'
+    logger.warning("DB_NAME not set, using test_database")
+
 client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ.get('DB_NAME', 'test_database')]
+db = client[db_name]
 
 # JWT Config
 JWT_SECRET = os.environ.get('JWT_SECRET')
 if not JWT_SECRET:
     JWT_SECRET = 'facts-are-foes-secret-key-prod-2024-xyz123-fallback'
-    logging.warning("JWT_SECRET not set, using fallback (not recommended for production)")
+    logger.warning("JWT_SECRET not set, using fallback (not recommended for production)")
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRATION_HOURS = 24
 
