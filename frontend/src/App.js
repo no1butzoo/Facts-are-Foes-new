@@ -10,6 +10,7 @@ import ProfilePage from "./pages/ProfilePage";
 import AdminPage from "./pages/AdminPage";
 import VerifyEmailPage from "./pages/VerifyEmailPage";
 import { SubscriptionSuccessPage, SubscriptionCancelPage } from "./pages/SubscriptionPages";
+import FFTCoursePage from "./pages/FFTCoursePage";
 import "./App.css";
 
 function App() {
@@ -28,6 +29,7 @@ function App() {
             <Route path="/verify-email" element={<VerifyEmailPage />} />
             <Route path="/subscription/success" element={<SubscriptionSuccessPage />} />
             <Route path="/subscription/cancel" element={<SubscriptionCancelPage />} />
+            <Route path="/fft-course" element={<FFTCoursePage />} />
           </Routes>
         </Layout>
         <Toaster position="bottom-right" theme="dark" />
