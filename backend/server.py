@@ -159,6 +159,10 @@ def generate_verification_token() -> str:
     return secrets.token_urlsafe(32)
 
 async def send_verification_email(email: str, token: str, origin_url: str):
+    if not RESEND_AVAILABLE:
+        logger.warning("Resend library not available, skipping email verification")
+        return False
+    
     if not RESEND_API_KEY or RESEND_API_KEY == 're_your_api_key_here':
         logger.warning("Resend API key not configured, skipping email verification")
         return False
