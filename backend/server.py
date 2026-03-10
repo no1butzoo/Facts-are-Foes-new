@@ -81,10 +81,6 @@ app = FastAPI(title="Facts Are Foes API")
 api_router = APIRouter(prefix="/api")
 security = HTTPBearer()
 
-# Logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
-
 # ============== MODELS ==============
 
 class UserCreate(BaseModel):
