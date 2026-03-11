@@ -595,6 +595,178 @@ class FactsAreFoesAPITester:
             self.log_test("Admin Test Error", False, f"Error: {str(e)}")
             return False
 
+    def test_intel_endpoints_sovereign_user(self):
+        """Test Intel endpoints with Sovereign user"""
+        print("\n🎯 Testing Intel Endpoints with Sovereign User...")
+        
+        # Login as the existing Sovereign user
+        login_data = {
+            "email": "newadmin@test.com",
+            "password": "password123"
+        }
+        
+        success, response = self.run_test("Login Sovereign User", "POST", "auth/login", 200, login_data)
+        
+        sovereign_token = None
+        if success and 'token' in response and 'user' in response:
+            sovereign_token = response['token']
+            user_data = response['user']
+            
+            # Verify user has sovereign tier
+            if user_data.get('tier') == 'sovereign':
+                self.log_test("Sovereign User Tier Verified", True)
+            else:
+                self.log_test("Sovereign User Tier Verified", False, f"Expected 'sovereign', got '{user_data.get('tier')}'")
+        else:
+            self.log_test("Login Sovereign User", False, "Failed to login sovereign user")
+            return False
+        
+        if not sovereign_token:
+            print("⚠️ Could not get sovereign token, skipping intel tests")
+            return False
+        
+        # Store current token and set sovereign token
+        original_token = self.token
+        self.token = sovereign_token
+        
+        # Test intel access check
+        success, response = self.run_test("Intel Access Check", "GET", "intel/access", 200)
+        if success and response.get('has_access') == True:
+            self.log_test("Intel Access Granted", True)
+        else:
+            self.log_test("Intel Access Granted", False, f"Access denied: {response}")
+        
+        # Test intel news endpoint
+        success, response = self.run_test("Intel News Endpoint", "GET", "intel/news", 200)
+        if success and 'articles' in response and isinstance(response['articles'], list):
+            self.log_test("Intel News Data Valid", True)
+            
+            # Check if articles have required fields
+            if len(response['articles']) > 0:
+                article = response['articles'][0]
+                required_fields = ['title', 'description', 'source']
+                if all(field in article for field in required_fields):
+                    self.log_test("Intel News Article Structure Valid", True)
+                else:
+                    self.log_test("Intel News Article Structure Valid", False, f"Missing fields in article: {article}")
+        else:
+            self.log_test("Intel News Data Valid", False, "No articles array in response")
+        
+        # Test intel content endpoint
+        success, response = self.run_test("Intel Content Endpoint", "GET", "intel/content", 200)
+        if success and 'content' in response and isinstance(response['content'], list):
+            self.log_test("Intel Content Data Valid", True)
+            
+            # Check if content has required fields
+            if len(response['content']) > 0:
+                content_item = response['content'][0]
+                required_fields = ['id', 'title', 'type', 'description']
+                if all(field in content_item for field in required_fields):
+                    self.log_test("Intel Content Structure Valid", True)
+                else:
+                    self.log_test("Intel Content Structure Valid", False, f"Missing fields in content: {content_item}")
+        else:
+            self.log_test("Intel Content Data Valid", False, "No content array in response")
+        
+        # Test generate foe response endpoint
+        foe_request_data = {
+            "headline": "Global Markets Rally Despite Economic Indicators",
+            "description": "Stocks hit record highs as investors ignore warning signs from the bond market.",
+            "source": "Financial Times"
+        }
+        
+        success, response = self.run_test("Generate Foe Response", "POST", "intel/generate-foe-response", 200, foe_request_data)
+        if success and 'foe_response' in response and response['foe_response']:
+            self.log_test("Foe Response Generated", True)
+        else:
+            self.log_test("Foe Response Generated", False, f"No foe_response in response: {response}")
+        
+        # Test cipher submission endpoint
+        cipher_data = {
+            "answers": ["option1", "option2", "option3", "option4", "option5"],
+            "fear_percentage": 25.5,
+            "intuition_percentage": 74.5,
+            "result_type": "intuitive_navigator"
+        }
+        
+        success, response = self.run_test("Cipher Submission", "POST", "intel/cipher-submit", 200, cipher_data)
+        if success and 'message' in response:
+            self.log_test("Cipher Submission Valid", True)
+        else:
+            self.log_test("Cipher Submission Valid", False, f"Invalid cipher response: {response}")
+        
+        # Restore original token
+        self.token = original_token
+        return True
+
+    def test_intel_endpoints_free_user(self):
+        """Test Intel endpoints with Free user to verify access denial"""
+        print("\n🚫 Testing Intel Endpoints with Free User...")
+        
+        # Create a new free user
+        timestamp = datetime.now().strftime('%H%M%S')
+        free_user_data = {
+            "username": f"freeuser_{timestamp}",
+            "email": f"freeuser_{timestamp}@test.com",
+            "password": "password123"
+        }
+        
+        success, response = self.run_test("Create Free User", "POST", "auth/register", 200, free_user_data)
+        
+        free_token = None
+        if success and 'token' in response and 'user' in response:
+            free_token = response['token']
+            user_data = response['user']
+            
+            # Verify user has free tier
+            if user_data.get('tier') == 'free':
+                self.log_test("Free User Tier Verified", True)
+            else:
+                self.log_test("Free User Tier Verified", False, f"Expected 'free', got '{user_data.get('tier')}'")
+        else:
+            self.log_test("Create Free User", False, "Failed to create free user")
+            return False
+        
+        if not free_token:
+            print("⚠️ Could not get free user token, skipping access denial tests")
+            return False
+        
+        # Store current token and set free user token
+        original_token = self.token
+        self.token = free_token
+        
+        # Test intel access check (should be denied)
+        success, response = self.run_test("Intel Access Check Free User", "GET", "intel/access", 200)
+        if success and response.get('has_access') == False:
+            self.log_test("Intel Access Denied for Free User", True)
+        else:
+            self.log_test("Intel Access Denied for Free User", False, f"Access should be denied: {response}")
+        
+        # Test intel content endpoint (should return empty content)
+        success, response = self.run_test("Intel Content Free User", "GET", "intel/content", 200)
+        if success and 'content' in response and len(response['content']) == 0:
+            self.log_test("Intel Content Empty for Free User", True)
+        else:
+            self.log_test("Intel Content Empty for Free User", False, f"Content should be empty: {response}")
+        
+        # Test generate foe response (should get canned response)
+        foe_request_data = {
+            "headline": "Test Headline for Free User",
+            "description": "Test description for free user testing.",
+            "source": "Test Source"
+        }
+        
+        success, response = self.run_test("Generate Foe Response Free User", "POST", "intel/generate-foe-response", 200, foe_request_data)
+        if success and 'foe_response' in response and response['foe_response']:
+            # Free users should get canned responses, not AI-generated ones
+            self.log_test("Foe Response for Free User", True)
+        else:
+            self.log_test("Foe Response for Free User", False, f"No foe_response: {response}")
+        
+        # Restore original token
+        self.token = original_token
+        return True
+
     def run_all_tests(self):
         """Run all API tests"""
         print("🚀 Starting Facts Are Foes API Tests...")
