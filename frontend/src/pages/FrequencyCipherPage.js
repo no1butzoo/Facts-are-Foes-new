@@ -62,7 +62,7 @@ const FrequencyCipherPage = () => {
         }
     };
 
-    const calculateResult = (allAnswers) => {
+    const calculateResult = async (allAnswers) => {
         const fearCount = allAnswers.filter(a => a === 'fear').length;
         const intuitionCount = allAnswers.filter(a => a === 'intuition').length;
         
@@ -89,14 +89,35 @@ const FrequencyCipherPage = () => {
             color = "#888899";
         }
 
-        setResult({
+        const resultData = {
             status,
             message,
             color,
             fearPercentage,
-            intuitionPercentage
-        });
+            intuitionPercentage,
+            result_type: status
+        };
+
+        setResult(resultData);
         setShowAnalysis(true);
+
+        // Submit to backend if logged in
+        if (isAuthenticated) {
+            try {
+                await axios.post(`${API}/intel/cipher-submit`, {
+                    answers: allAnswers,
+                    fear_percentage: fearPercentage,
+                    intuition_percentage: intuitionPercentage,
+                    result_type: status
+                }, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                toast.success('Frequency signature archived');
+            } catch (error) {
+                console.error('Failed to save result:', error);
+                toast.error('Failed to archive signature');
+            }
+        }
     };
 
     const reset = () => {
