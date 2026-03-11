@@ -815,6 +815,12 @@ class FactsAreFoesAPITester:
         # Test admin functionality with admin email
         self.test_admin_with_admin_email()
         
+        # NEW: Test Intel endpoints with Sovereign user
+        self.test_intel_endpoints_sovereign_user()
+        
+        # NEW: Test Intel endpoints with Free user (access denial)
+        self.test_intel_endpoints_free_user()
+        
         # Print final results
         print(f"\n📊 Test Results: {self.tests_passed}/{self.tests_run} passed")
         
