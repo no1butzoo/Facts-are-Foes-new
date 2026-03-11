@@ -11,6 +11,11 @@ import AdminPage from "./pages/AdminPage";
 import VerifyEmailPage from "./pages/VerifyEmailPage";
 import { SubscriptionSuccessPage, SubscriptionCancelPage } from "./pages/SubscriptionPages";
 import FFTCoursePage from "./pages/FFTCoursePage";
+import PredictiveAnalyticsPage from "./pages/PredictiveAnalyticsPage";
+import FrequencyCipherPage from "./pages/FrequencyCipherPage";
+import ProjectThyselfPage from "./pages/ProjectThyselfPage";
+import IntelPortalPage from "./pages/IntelPortalPage";
+import InvisibleHandPage from "./pages/InvisibleHandPage";
 import "./App.css";
 
 function App() {
