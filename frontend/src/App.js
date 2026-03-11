@@ -35,6 +35,11 @@ function App() {
             <Route path="/subscription/success" element={<SubscriptionSuccessPage />} />
             <Route path="/subscription/cancel" element={<SubscriptionCancelPage />} />
             <Route path="/fft-course" element={<FFTCoursePage />} />
+            <Route path="/predictive-analytics" element={<PredictiveAnalyticsPage />} />
+            <Route path="/frequency-cipher" element={<FrequencyCipherPage />} />
+            <Route path="/project-thyself" element={<ProjectThyselfPage />} />
+            <Route path="/intel-portal" element={<IntelPortalPage />} />
+            <Route path="/invisible-hand" element={<InvisibleHandPage />} />
           </Routes>
         </Layout>
         <Toaster position="bottom-right" theme="dark" />
