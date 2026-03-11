@@ -715,7 +715,7 @@ async def create_checkout_session(req: CheckoutRequest, current_user: dict = Dep
         raise HTTPException(status_code=400, detail="Invalid plan ID")
     
     try:
-        checkout = StripeCheckout(api_key=STRIPE_API_KEY, account_id=current_user["id"])
+        checkout = StripeCheckout(api_key=STRIPE_API_KEY)
         
         checkout_request = CheckoutSessionRequest(
             product_name=plan["name"],
@@ -749,7 +749,7 @@ async def get_subscription_status(session_id: str, current_user: dict = Depends(
         raise HTTPException(status_code=500, detail="Stripe not configured")
     
     try:
-        checkout = StripeCheckout(api_key=STRIPE_API_KEY, account_id=current_user["id"])
+        checkout = StripeCheckout(api_key=STRIPE_API_KEY)
         status: CheckoutStatusResponse = await checkout.get_checkout_status(session_id)
         
         if status.payment_status == "paid":
