@@ -8,12 +8,15 @@ import logging
 import asyncio
 from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict, EmailStr
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Any
 import uuid
 import secrets
 from datetime import datetime, timezone, timedelta
 import bcrypt
 import jwt
+import feedparser
+from bs4 import BeautifulSoup
+import random
 
 # Optional imports with fallbacks
 try:
@@ -73,7 +76,15 @@ SUBSCRIPTION_PLANS = {
         "name": "Premium Monthly",
         "price": 9.00,
         "currency": "usd",
-        "features": ["Unlimited AI explanations", "Ad-free experience", "Early access", "Premium badge", "Priority support"]
+        "features": ["Unlimited AI explanations", "Ad-free experience", "Premium badge"],
+        "tier": "standard"
+    },
+    "sovereign_monthly": {
+        "name": "Sovereign Access",
+        "price": 18.00,
+        "currency": "usd",
+        "features": ["Intel Portal Access", "Predictive Analytics", "Project: Thyself", "Frequency Cipher History"],
+        "tier": "sovereign"
     }
 }
 
@@ -99,6 +110,7 @@ class UserResponse(BaseModel):
     email: str
     avatar_url: Optional[str] = None
     created_at: str
+    tier: Optional[str] = "free"
 
 class FactCreate(BaseModel):
     title: str
@@ -150,6 +162,17 @@ class EmailVerificationRequest(BaseModel):
 
 class ResendVerificationRequest(BaseModel):
     email: EmailStr
+
+class FoeResponseRequest(BaseModel):
+    headline: str
+    description: str
+    source: str
+
+class CipherSubmission(BaseModel):
+    answers: List[str]
+    fear_percentage: float
+    intuition_percentage: float
+    result_type: str
 
 # ============== AUTH HELPERS ==============
 
@@ -236,6 +259,7 @@ async def register(user: UserCreate, request: Request):
         "email_verified": False,
         "verification_token": verification_token,
         "is_premium": False,
+        "tier": "free",
         "subscription_id": None
     }
     await db.users.insert_one(user_doc)
@@ -252,7 +276,8 @@ async def register(user: UserCreate, request: Request):
             "email": user_doc["email"],
             "avatar_url": user_doc["avatar_url"],
             "email_verified": user_doc["email_verified"],
-            "is_premium": user_doc["is_premium"]
+            "is_premium": user_doc["is_premium"],
+            "tier": user_doc["tier"]
         },
         "message": "Registration successful! Please check your email to verify your account."
     }
@@ -306,7 +331,8 @@ async def login(user: UserLogin):
             "email": db_user["email"],
             "avatar_url": db_user.get("avatar_url"),
             "email_verified": db_user.get("email_verified", False),
-            "is_premium": db_user.get("is_premium", False)
+            "is_premium": db_user.get("is_premium", False),
+            "tier": db_user.get("tier", "free")
         }
     }
 
@@ -319,8 +345,141 @@ async def get_me(current_user: dict = Depends(get_current_user)):
         "avatar_url": current_user.get("avatar_url"),
         "created_at": current_user["created_at"],
         "email_verified": current_user.get("email_verified", False),
-        "is_premium": current_user.get("is_premium", False)
+        "is_premium": current_user.get("is_premium", False),
+        "tier": current_user.get("tier", "free")
     }
+
+# ============== INTEL ROUTES (NEW) ==============
+
+@api_router.get("/intel/news")
+async def get_intel_news():
+    # Fetch real news from RSS feeds
+    rss_feeds = [
+        "http://feeds.bbci.co.uk/news/world/rss.xml",
+        "http://rss.cnn.com/rss/edition.rss",
+        "https://www.aljazeera.com/xml/rss/all.xml"
+    ]
+    
+    articles = []
+    
+    try:
+        # Pick a random feed to avoid overwhelming or getting duplicates
+        feed_url = random.choice(rss_feeds)
+        feed = await asyncio.to_thread(feedparser.parse, feed_url)
+        
+        for entry in feed.entries[:10]:
+            # Clean up HTML description
+            description = ""
+            if 'summary' in entry:
+                soup = BeautifulSoup(entry.summary, 'html.parser')
+                description = soup.get_text()[:150] + "..."
+            elif 'description' in entry:
+                soup = BeautifulSoup(entry.description, 'html.parser')
+                description = soup.get_text()[:150] + "..."
+                
+            articles.append({
+                "title": entry.title,
+                "description": description,
+                "source": feed.feed.title if 'title' in feed.feed else "Mainstream Media",
+                "url": entry.link,
+                "publishedAt": entry.published if 'published' in entry else datetime.now().isoformat(),
+                "category": "politics" # Defaulting for now
+            })
+            
+    except Exception as e:
+        logger.error(f"Failed to fetch RSS: {e}")
+        # Fallback to mock data if RSS fails
+        articles = [
+            {
+                "title": "Global Markets Rally Despite Economic Indicators",
+                "description": "Stocks hit record highs as investors ignore warning signs from the bond market.",
+                "source": "Financial Times",
+                "url": "#",
+                "category": "business"
+            },
+            {
+                "title": "New AI Regulations Proposed by EU Commission",
+                "description": "Lawmakers seek to curb the influence of generative algorithms on public opinion.",
+                "source": "TechCrunch",
+                "url": "#",
+                "category": "technology"
+            }
+        ]
+
+    return {"articles": articles}
+
+@api_router.post("/intel/generate-foe-response")
+async def generate_foe_response(req: FoeResponseRequest, current_user: dict = Depends(get_current_user)):
+    if not current_user.get("is_premium") and current_user.get("tier") != "sovereign":
+        # Free users get canned responses
+        canned = [
+            "Observe the emotional charge in this headline. Who benefits from your fear?",
+            "Notice the binary choice presented here. Reality is rarely this black and white.",
+            "This narrative is designed to bypass your logic and trigger your tribal instincts.",
+            "Ask yourself: What is NOT being said in this report?"
+        ]
+        return {"foe_response": random.choice(canned)}
+
+    if not EMERGENT_LLM_KEY:
+        return {"foe_response": "System offline. Trust your intuition."}
+
+    try:
+        chat = LlmChat(
+            api_key=EMERGENT_LLM_KEY,
+            session_id=f"foe-resp-{current_user['id']}-{uuid.uuid4()}",
+            system_message="You are a narrative intelligence analyst. Your job is to decode mainstream news headlines and expose the underlying psychological manipulation or 'Backfire Effect'. Keep responses under 50 words. Be cryptic, insightful, and provocative."
+        ).with_model("gemini", "gemini-3-flash-preview")
+        
+        prompt = f"""
+        Analyze this mainstream headline:
+        HEADLINE: {req.headline}
+        DESCRIPTION: {req.description}
+        SOURCE: {req.source}
+        
+        Generate a 'Counter-Narrative' or 'Foe Response'.
+        """
+        
+        user_message = UserMessage(text=prompt)
+        response = await chat.send_message(user_message)
+        
+        return {"foe_response": response}
+    except Exception as e:
+        logger.error(f"LLM Error: {e}")
+        return {"foe_response": "Signal jammed. The narrative is too strong right now."}
+
+@api_router.post("/intel/cipher-submit")
+async def submit_cipher_result(submission: CipherSubmission, current_user: dict = Depends(get_current_user)):
+    doc = {
+        "id": str(uuid.uuid4()),
+        "user_id": current_user["id"],
+        "answers": submission.answers,
+        "fear_percentage": submission.fear_percentage,
+        "intuition_percentage": submission.intuition_percentage,
+        "result_type": submission.result_type,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.cipher_results.insert_one(doc)
+    return {"message": "Cipher result archived"}
+
+@api_router.get("/intel/access")
+async def check_intel_access(current_user: dict = Depends(get_current_user)):
+    has_access = current_user.get("tier") == "sovereign" or current_user.get("is_admin", False)
+    return {"has_access": has_access}
+
+@api_router.get("/intel/content")
+async def get_intel_content(current_user: dict = Depends(get_current_user)):
+    # Gated content endpoint
+    has_access = current_user.get("tier") == "sovereign" or current_user.get("is_admin", False)
+    
+    if not has_access:
+        return {"content": []}
+        
+    content = [
+        {"id": "1", "title": "The 5th Dimension Strategy", "type": "Video", "description": "Transcending the left-right paradigm."},
+        {"id": "2", "title": "Narrative Kill-Switch", "type": "PDF", "description": "How to stop a viral lie in its tracks."},
+        {"id": "3", "title": "Project: Thyself - Full Archive", "type": "Course", "description": "All 5 Alchemical Formulas unlocked."}
+    ]
+    return {"content": content}
 
 # ============== FACTS ROUTES ==============
 
@@ -594,10 +753,19 @@ async def get_subscription_status(session_id: str, current_user: dict = Depends(
         status: CheckoutStatusResponse = await checkout.get_checkout_status(session_id)
         
         if status.payment_status == "paid":
+            # Determine tier based on the subscription in DB
+            subscription = await db.subscriptions.find_one({"session_id": session_id})
+            tier = "premium" # Default
+            if subscription and subscription.get("plan_id") == "sovereign_monthly":
+                tier = "sovereign"
+            elif subscription and subscription.get("plan_id") == "premium_monthly":
+                tier = "standard"
+
             await db.users.update_one(
                 {"id": current_user["id"]},
                 {"$set": {
                     "is_premium": True,
+                    "tier": tier,
                     "subscription_id": status.subscription_id,
                     "subscription_updated_at": datetime.now(timezone.utc).isoformat()
                 }}
@@ -624,6 +792,7 @@ async def get_my_subscription(current_user: dict = Depends(get_current_user)):
     )
     return {
         "is_premium": current_user.get("is_premium", False),
+        "tier": current_user.get("tier", "free"),
         "subscription": subscription,
         "email_verified": current_user.get("email_verified", False)
     }
@@ -636,6 +805,7 @@ async def get_admin_user(credentials: HTTPAuthorizationCredentials = Depends(sec
     user = await get_current_user(credentials)
     first_user = await db.users.find_one({}, {"_id": 0}, sort=[("created_at", 1)])
     if user["email"] in ADMIN_EMAILS or (first_user and user["id"] == first_user["id"]):
+        user["is_admin"] = True # Flag for frontend
         return user
     raise HTTPException(status_code=403, detail="Admin access required")
 
