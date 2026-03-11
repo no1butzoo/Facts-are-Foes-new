@@ -12,6 +12,7 @@ import { Badge } from '../components/ui/badge';
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 const FrequencyCipherPage = () => {
+    const { isAuthenticated, token } = useAuth();
     const [currentQuestion, setCurrentQuestion] = useState(0);
     const [answers, setAnswers] = useState([]);
     const [result, setResult] = useState(null);
