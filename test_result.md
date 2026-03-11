@@ -101,3 +101,209 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: "Perform a comprehensive end-to-end test of the new Narrative Intelligence Platform features including Intel Portal, Predictive Analytics, Frequency Cipher, Project Thyself, and Invisible Hand with proper tier-based access control."
+
+backend:
+  - task: "Intel Portal News API"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ Intel news endpoint (/api/intel/news) working correctly. Returns valid articles array with required fields (title, description, source). RSS feed integration functional with fallback to mock data."
+
+  - task: "Intel Access Control"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ Intel access control (/api/intel/access) working correctly. Sovereign users get has_access=true, free users get has_access=false. Tier-based access properly implemented."
+
+  - task: "Intel Content API"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ Intel content endpoint (/api/intel/content) working correctly. Returns gated content for Sovereign users, empty array for free users. Content structure includes id, title, type, description fields."
+
+  - task: "Predictive Analytics - Foe Response Generation"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ Foe response generation (/api/intel/generate-foe-response) working correctly. Sovereign users get AI-generated responses via Emergent LLM, free users get canned responses. Both scenarios tested successfully."
+
+  - task: "Frequency Cipher Submission"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ Cipher submission endpoint (/api/intel/cipher-submit) working correctly. Accepts answers array, fear/intuition percentages, and result_type. Data properly stored in cipher_results collection."
+
+  - task: "Sovereign User Authentication"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ Sovereign user (newadmin@test.com) authentication working correctly. User has tier='sovereign' and is_premium=true. Login returns valid JWT token."
+
+  - task: "Free User Access Restrictions"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ Free user access restrictions working correctly. New free users properly denied access to intel content and receive canned responses for foe generation."
+
+  - task: "Core Facts API"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ Core facts API endpoints working correctly. CRUD operations, voting, AI explanations, and engagement tracking all functional."
+
+  - task: "User Management API"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ User management APIs working correctly. Registration, login, email verification, and user stats endpoints all functional."
+
+  - task: "Stripe Integration"
+    implemented: true
+    working: false
+    file: "backend/server.py"
+    stuck_count: 1
+    priority: "low"
+    needs_retesting: false
+    status_history:
+        - working: false
+          agent: "testing"
+          comment: "❌ Stripe checkout session creation failing with 500 error. This is not critical for Intel features but may need investigation for subscription functionality."
+
+frontend:
+  - task: "Intel Portal UI"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/pages/IntelPortal.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "testing"
+          comment: "Frontend testing not performed by testing agent. Main agent should verify Intel Portal UI displays Latest Intel Drops section and loads content correctly."
+
+  - task: "Predictive Analytics UI"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/pages/PredictiveAnalytics.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "testing"
+          comment: "Frontend testing not performed by testing agent. Main agent should verify news articles load and Generate Foe Response button works correctly."
+
+  - task: "Frequency Cipher UI"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/pages/FrequencyCipher.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "testing"
+          comment: "Frontend testing not performed by testing agent. Main agent should verify 5 questions display and result analysis appears after completion."
+
+  - task: "Project Thyself UI"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/pages/ProjectThyself.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "testing"
+          comment: "Frontend testing not performed by testing agent. Main agent should verify Formula cards are UNLOCKED for Sovereign users and can be expanded."
+
+  - task: "Invisible Hand UI"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/pages/InvisibleHand.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "testing"
+          comment: "Frontend testing not performed by testing agent. Main agent should verify chart rendering functionality."
+
+metadata:
+  created_by: "testing_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "Intel Portal UI"
+    - "Predictive Analytics UI"
+    - "Frequency Cipher UI"
+    - "Project Thyself UI"
+    - "Invisible Hand UI"
+  stuck_tasks:
+    - "Stripe Integration"
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    - agent: "testing"
+      message: "Backend testing completed successfully. All Intel-related APIs are working correctly with proper tier-based access control. Sovereign user authentication verified. Free user access restrictions working as expected. 75/79 tests passed - only non-critical failures in Stripe integration and expected admin access denials. Frontend testing required to complete end-to-end verification."
