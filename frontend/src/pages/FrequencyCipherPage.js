@@ -1,10 +1,15 @@
 import { useState } from 'react';
+import axios from 'axios';
+import { useAuth } from '../contexts/AuthContext';
+import { toast } from 'sonner';
 import { 
     Brain, Heart, AlertTriangle, Shield, Zap, RefreshCw,
     CheckCircle, XCircle, ArrowRight, Eye, Lock
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
+
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 const FrequencyCipherPage = () => {
     const [currentQuestion, setCurrentQuestion] = useState(0);
