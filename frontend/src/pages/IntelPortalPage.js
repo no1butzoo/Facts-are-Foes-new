@@ -213,7 +213,18 @@ const IntelPortalPage = () => {
                 </div>
 
                 {/* Quick Actions */}
-                <div className="grid md:grid-cols-3 gap-4 mb-8">
+                <div className="grid md:grid-cols-4 gap-4 mb-8">
+                    <Button 
+                        onClick={() => navigate('/invisible-hand')}
+                        className="h-auto py-4 justify-start gap-3"
+                        style={{ backgroundColor: '#15151e', border: '1px solid #333', color: '#fff' }}
+                    >
+                        <Eye className="w-6 h-6" style={{ color: '#ff0055' }} />
+                        <div className="text-left">
+                            <div className="font-bold">Invisible Hand</div>
+                            <div className="text-xs" style={{ color: '#888899' }}>Narrative Visualization</div>
+                        </div>
+                    </Button>
                     <Button 
                         onClick={() => navigate('/predictive-analytics')}
                         className="h-auto py-4 justify-start gap-3"
