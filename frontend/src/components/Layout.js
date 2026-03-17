@@ -32,6 +32,7 @@ const Layout = ({ children }) => {
     const navLinks = [
         { path: '/', label: 'Home', icon: Triangle },
         { path: '/explore', label: 'Explore', icon: Compass },
+        { path: '/intel-portal', label: 'Intelligence', icon: Shield },
         { path: '/fft-course', label: 'FFT Course', icon: GraduationCap },
     ];
 
