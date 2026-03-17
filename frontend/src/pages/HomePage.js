@@ -238,6 +238,87 @@ const HomePage = () => {
                 </div>
             </section>
 
+            {/* Intelligence Platform Teaser */}
+            <section className="py-24 px-6 relative overflow-hidden bg-background">
+                <div className="absolute inset-0 bg-grid-pattern opacity-5" />
+                <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center relative z-10">
+                    <div>
+                        <div className="inline-flex items-center gap-2 px-4 py-2 mb-6 border border-[#ff0055] bg-[rgba(255,0,85,0.1)] rounded-full">
+                            <Shield className="w-4 h-4 text-[#ff0055]" />
+                            <span className="text-xs uppercase tracking-widest text-[#ff0055] font-bold">New: Sovereign Access</span>
+                        </div>
+                        <h2 className="font-heading text-4xl md:text-5xl font-bold tracking-tight mb-6 text-foreground">
+                            NARRATIVE <span className="text-[#00ffcc]">INTELLIGENCE</span> PLATFORM
+                        </h2>
+                        <p className="text-muted-foreground text-lg mb-8">
+                            Bypass the mainstream filter. Access predictive analytics, counter-narrative AI, and alchemical formulas for mental sovereignty.
+                        </p>
+                        
+                        <div className="space-y-4 mb-8">
+                            {[
+                                { title: "Predictive Analytics", desc: "Monitor narrative trends before they break" },
+                                { title: "The Invisible Hand", desc: "Visualize the data behind the fear" },
+                                { title: "Frequency Cipher", desc: "Decode your intuition vs. programming" },
+                                { title: "Project: Thyself", desc: "5 alchemical formulas for mind control defense" }
+                            ].map((feature, i) => (
+                                <div key={i} className="flex items-start gap-3">
+                                    <div className="mt-1 w-5 h-5 rounded-full bg-[#00ffcc]/20 flex items-center justify-center shrink-0">
+                                        <Check className="w-3 h-3 text-[#00ffcc]" />
+                                    </div>
+                                    <div>
+                                        <h4 className="font-bold text-foreground">{feature.title}</h4>
+                                        <p className="text-sm text-muted-foreground">{feature.desc}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <Link to="/intel-portal">
+                            <Button className="bg-[#ff0055] text-white hover:bg-[#ff0055]/90 px-8 py-6 text-lg">
+                                Enter the Intel Portal
+                                <ArrowRight className="ml-2 w-5 h-5" />
+                            </Button>
+                        </Link>
+                    </div>
+
+                    <div className="relative">
+                        <div className="absolute -inset-4 bg-gradient-to-r from-[#ff0055]/20 to-[#00ffcc]/20 blur-2xl rounded-full opacity-50" />
+                        <div className="relative bg-[#15151e] border border-[#333] p-6 rounded-lg shadow-2xl">
+                            {/* Mock Dashboard UI */}
+                            <div className="flex items-center justify-between mb-6 border-b border-[#333] pb-4">
+                                <div className="flex items-center gap-2">
+                                    <Eye className="w-5 h-5 text-[#ff0055]" />
+                                    <span className="font-bold text-white">LIVE FEED</span>
+                                </div>
+                                <div className="text-xs text-[#00ffcc] animate-pulse">● SIGNAL ACTIVE</div>
+                            </div>
+                            
+                            <div className="space-y-4">
+                                {[
+                                    { title: "Global Fear Index Spiking", time: "2m ago", risk: "HIGH" },
+                                    { title: "Narrative Divergence Detected", time: "15m ago", risk: "MED" },
+                                    { title: "Truth Signal Stabilizing", time: "1h ago", risk: "LOW" }
+                                ].map((item, i) => (
+                                    <div key={i} className="p-4 bg-[#0a0a0f] border border-[#333] rounded flex justify-between items-center">
+                                        <div>
+                                            <div className="font-bold text-white text-sm">{item.title}</div>
+                                            <div className="text-xs text-[#666]">{item.time}</div>
+                                        </div>
+                                        <div className={`px-2 py-1 text-[10px] font-bold rounded ${
+                                            item.risk === 'HIGH' ? 'bg-[#ff0055]/20 text-[#ff0055]' :
+                                            item.risk === 'MED' ? 'bg-[#FFD700]/20 text-[#FFD700]' :
+                                            'bg-[#00ffcc]/20 text-[#00ffcc]'
+                                        }`}>
+                                            {item.risk}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             {/* Subscription Section */}
             <section className="py-24 px-6 bg-background">
                 <div className="max-w-5xl mx-auto">
