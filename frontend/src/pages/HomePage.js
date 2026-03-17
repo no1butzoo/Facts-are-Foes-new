@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { Triangle, ArrowRight, Zap, Eye, Atom, Landmark, Heart, Leaf, Rocket, UtensilsCrossed, Cpu, Brain, Crown, Check, Loader2 } from 'lucide-react';
+import { Triangle, ArrowRight, Zap, Eye, Atom, Landmark, Heart, Leaf, Rocket, UtensilsCrossed, Cpu, Brain, Crown, Check, Loader2, Shield, Lock } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import FactCard from '../components/FactCard';
 import { toast } from 'sonner';
