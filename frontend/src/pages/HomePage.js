@@ -30,22 +30,25 @@ const HomePage = () => {
     const [showAuthModal, setShowAuthModal] = useState(false);
     const [authMode, setAuthMode] = useState('register');
 
-    const handleSubscribe = async () => {
+    const handleSubscribe = async (planId = 'premium_monthly') => {
         if (!isAuthenticated) {
             setAuthMode('register');
             setShowAuthModal(true);
             return;
         }
 
-        if (isPremium) {
+        if (isPremium && planId === 'premium_monthly') {
             toast.success('You are already a premium member!');
             return;
         }
 
+        // Check if user is already sovereign
+        // Note: Ideally backend should check this properly
+        
         setCheckoutLoading(true);
         try {
             const response = await axios.post(`${API}/subscription/create-checkout`, {
-                plan_id: 'premium_monthly',
+                plan_id: planId,
                 origin_url: window.location.origin
             }, {
                 headers: { Authorization: `Bearer ${token}` }
