@@ -334,31 +334,31 @@ const HomePage = () => {
                         </p>
                     </div>
 
-                    <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                    <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
                         {/* Free Tier */}
                         <div className="p-8 bg-card border border-white/10 flex flex-col">
                             <div className="mb-6">
-                                <h3 className="font-heading text-2xl uppercase tracking-widest mb-2">Free</h3>
+                                <h3 className="font-heading text-xl uppercase tracking-widest mb-2">Free</h3>
                                 <div className="flex items-baseline gap-1">
-                                    <span className="font-heading text-4xl font-bold">$0</span>
+                                    <span className="font-heading text-3xl font-bold">$0</span>
                                     <span className="text-muted-foreground">/month</span>
                                 </div>
                             </div>
-                            <ul className="space-y-3 mb-8 flex-1">
+                            <ul className="space-y-3 mb-8 flex-1 text-sm">
                                 <li className="flex items-center gap-3 text-muted-foreground">
-                                    <Check className="w-5 h-5 text-primary" />
+                                    <Check className="w-4 h-4 text-primary" />
                                     Browse all myths
                                 </li>
                                 <li className="flex items-center gap-3 text-muted-foreground">
-                                    <Check className="w-5 h-5 text-primary" />
+                                    <Check className="w-4 h-4 text-primary" />
                                     3 AI explanations per day
                                 </li>
                                 <li className="flex items-center gap-3 text-muted-foreground">
-                                    <Check className="w-5 h-5 text-primary" />
+                                    <Check className="w-4 h-4 text-primary" />
                                     Submit myths
                                 </li>
                                 <li className="flex items-center gap-3 text-muted-foreground">
-                                    <Check className="w-5 h-5 text-primary" />
+                                    <Check className="w-4 h-4 text-primary" />
                                     Vote on content
                                 </li>
                             </ul>
@@ -369,57 +369,93 @@ const HomePage = () => {
 
                         {/* Premium Tier */}
                         <div className="p-8 bg-card border-2 border-primary relative flex flex-col glow-gold">
-                            <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                                <span className="bg-primary text-primary-foreground px-4 py-1 text-xs uppercase tracking-widest font-bold flex items-center gap-1">
-                                    <Crown className="w-3 h-3" />
-                                    Most Popular
-                                </span>
-                            </div>
                             <div className="mb-6">
-                                <h3 className="font-heading text-2xl uppercase tracking-widest mb-2 text-primary">Premium</h3>
+                                <h3 className="font-heading text-xl uppercase tracking-widest mb-2 text-primary">Premium</h3>
                                 <div className="flex items-baseline gap-1">
-                                    <span className="font-heading text-4xl font-bold text-primary">$9</span>
+                                    <span className="font-heading text-3xl font-bold text-primary">$9</span>
                                     <span className="text-muted-foreground">/month</span>
                                 </div>
                             </div>
-                            <ul className="space-y-3 mb-8 flex-1">
+                            <ul className="space-y-3 mb-8 flex-1 text-sm">
                                 <li className="flex items-center gap-3">
-                                    <Check className="w-5 h-5 text-primary" />
+                                    <Check className="w-4 h-4 text-primary" />
                                     Everything in Free
                                 </li>
                                 <li className="flex items-center gap-3">
-                                    <Check className="w-5 h-5 text-primary" />
+                                    <Check className="w-4 h-4 text-primary" />
                                     <strong>Unlimited</strong> AI explanations
                                 </li>
                                 <li className="flex items-center gap-3">
-                                    <Check className="w-5 h-5 text-primary" />
+                                    <Check className="w-4 h-4 text-primary" />
                                     Ad-free experience
                                 </li>
                                 <li className="flex items-center gap-3">
-                                    <Check className="w-5 h-5 text-primary" />
-                                    Early access to new myths
-                                </li>
-                                <li className="flex items-center gap-3">
-                                    <Check className="w-5 h-5 text-primary" />
+                                    <Check className="w-4 h-4 text-primary" />
                                     Premium badge on profile
-                                </li>
-                                <li className="flex items-center gap-3">
-                                    <Check className="w-5 h-5 text-primary" />
-                                    Priority support
                                 </li>
                             </ul>
                             <Button 
                                 className="w-full btn-primary"
-                                onClick={handleSubscribe}
+                                onClick={() => handleSubscribe('premium_monthly')}
                                 disabled={checkoutLoading || isPremium}
-                                data-testid="subscribe-btn"
                             >
                                 {checkoutLoading ? (
                                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                                 ) : (
                                     <Crown className="w-4 h-4 mr-2" />
                                 )}
-                                {isPremium ? 'You are Premium!' : 'Subscribe for $9/month'}
+                                {isPremium ? 'Active' : 'Subscribe'}
+                            </Button>
+                        </div>
+
+                        {/* Sovereign Tier */}
+                        <div className="p-8 bg-[#15151e] border-2 border-[#ff0055] relative flex flex-col shadow-xl">
+                             <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                                <span className="bg-[#ff0055] text-white px-4 py-1 text-xs uppercase tracking-widest font-bold flex items-center gap-1">
+                                    <Shield className="w-3 h-3" />
+                                    Full Access
+                                </span>
+                            </div>
+                            <div className="mb-6">
+                                <h3 className="font-heading text-xl uppercase tracking-widest mb-2 text-[#ff0055]">Sovereign</h3>
+                                <div className="flex items-baseline gap-1">
+                                    <span className="font-heading text-3xl font-bold text-[#ff0055]">$18</span>
+                                    <span className="text-muted-foreground">/month</span>
+                                </div>
+                            </div>
+                            <ul className="space-y-3 mb-8 flex-1 text-sm">
+                                <li className="flex items-center gap-3 text-white">
+                                    <Check className="w-4 h-4 text-[#ff0055]" />
+                                    <strong>Everything in Premium</strong>
+                                </li>
+                                <li className="flex items-center gap-3 text-white">
+                                    <Check className="w-4 h-4 text-[#ff0055]" />
+                                    Intel Portal Access
+                                </li>
+                                <li className="flex items-center gap-3 text-white">
+                                    <Check className="w-4 h-4 text-[#ff0055]" />
+                                    Predictive Analytics
+                                </li>
+                                <li className="flex items-center gap-3 text-white">
+                                    <Check className="w-4 h-4 text-[#ff0055]" />
+                                    Project: Thyself Formulas
+                                </li>
+                                <li className="flex items-center gap-3 text-white">
+                                    <Check className="w-4 h-4 text-[#ff0055]" />
+                                    Frequency Cipher History
+                                </li>
+                            </ul>
+                            <Button 
+                                className="w-full bg-[#ff0055] hover:bg-[#ff0055]/90 text-white"
+                                onClick={() => handleSubscribe('sovereign_monthly')}
+                                disabled={checkoutLoading}
+                            >
+                                {checkoutLoading ? (
+                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                ) : (
+                                    <Lock className="w-4 h-4 mr-2" />
+                                )}
+                                Unlock Access
                             </Button>
                         </div>
                     </div>
