@@ -1,26 +1,30 @@
 import { useState, useEffect } from 'react';
+import axios from 'axios';
 import { 
-    LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area
+    LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, Legend
 } from 'recharts';
-import { Eye, TrendingUp, AlertTriangle, Shield, Activity, Zap } from 'lucide-react';
+import { Eye, TrendingUp, AlertTriangle, Shield, Activity, Zap, Loader2 } from 'lucide-react';
 import { Badge } from '../components/ui/badge';
 
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+
 const InvisibleHandPage = () => {
-    // Mock data for the visualization
-    const data = [
-        { name: 'Jan', narrative: 40, truth: 24, fear: 24 },
-        { name: 'Feb', narrative: 30, truth: 13, fear: 22 },
-        { name: 'Mar', narrative: 20, truth: 58, fear: 22 },
-        { name: 'Apr', narrative: 27, truth: 39, fear: 20 },
-        { name: 'May', narrative: 18, truth: 48, fear: 21 },
-        { name: 'Jun', narrative: 23, truth: 38, fear: 25 },
-        { name: 'Jul', narrative: 34, truth: 43, fear: 21 },
-        { name: 'Aug', narrative: 65, truth: 25, fear: 55 }, // Fear event
-        { name: 'Sep', narrative: 55, truth: 30, fear: 45 },
-        { name: 'Oct', narrative: 78, truth: 15, fear: 70 }, // Election/Event cycle
-        { name: 'Nov', narrative: 82, truth: 10, fear: 75 },
-        { name: 'Dec', narrative: 50, truth: 45, fear: 40 },
-    ];
+    const [data, setData] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchInvisibleHandData = async () => {
+            try {
+                const response = await axios.get(`${API}/intel/invisible-hand`);
+                setData(response.data.data);
+            } catch (error) {
+                console.error('Failed to load invisible hand data:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchInvisibleHandData();
+    }, []);
 
     const CustomTooltip = ({ active, payload, label }) => {
         if (active && payload && payload.length) {
@@ -75,48 +79,58 @@ const InvisibleHandPage = () => {
                     </div>
 
                     <div className="h-[400px] w-full">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={data}>
-                                <defs>
-                                    <linearGradient id="colorNarrative" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#ff0055" stopOpacity={0.3}/>
-                                        <stop offset="95%" stopColor="#ff0055" stopOpacity={0}/>
-                                    </linearGradient>
-                                    <linearGradient id="colorTruth" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#00ffcc" stopOpacity={0.3}/>
-                                        <stop offset="95%" stopColor="#00ffcc" stopOpacity={0}/>
-                                    </linearGradient>
-                                </defs>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
-                                <XAxis dataKey="name" stroke="#666" />
-                                <YAxis stroke="#666" />
-                                <Tooltip content={<CustomTooltip />} />
-                                <Area 
-                                    type="monotone" 
-                                    dataKey="narrative" 
-                                    stroke="#ff0055" 
-                                    fillOpacity={1} 
-                                    fill="url(#colorNarrative)" 
-                                    strokeWidth={2}
-                                />
-                                <Area 
-                                    type="monotone" 
-                                    dataKey="truth" 
-                                    stroke="#00ffcc" 
-                                    fillOpacity={1} 
-                                    fill="url(#colorTruth)" 
-                                    strokeWidth={2}
-                                />
-                                <Line 
-                                    type="step" 
-                                    dataKey="fear" 
-                                    stroke="#FFD700" 
-                                    strokeWidth={1} 
-                                    dot={false}
-                                    strokeDasharray="5 5"
-                                />
-                            </AreaChart>
-                        </ResponsiveContainer>
+                        {loading ? (
+                            <div className="flex justify-center items-center h-full">
+                                <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#00ffcc' }} />
+                            </div>
+                        ) : (
+                            <ResponsiveContainer width="100%" height="100%">
+                                <AreaChart data={data}>
+                                    <defs>
+                                        <linearGradient id="colorNarrative" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="#ff0055" stopOpacity={0.3}/>
+                                            <stop offset="95%" stopColor="#ff0055" stopOpacity={0}/>
+                                        </linearGradient>
+                                        <linearGradient id="colorTruth" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="#00ffcc" stopOpacity={0.3}/>
+                                            <stop offset="95%" stopColor="#00ffcc" stopOpacity={0}/>
+                                        </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
+                                    <XAxis dataKey="name" stroke="#666" />
+                                    <YAxis stroke="#666" />
+                                    <Tooltip content={<CustomTooltip />} />
+                                    <Legend wrapperStyle={{ paddingTop: '20px' }} />
+                                    <Area 
+                                        type="monotone" 
+                                        name="Narrative Control"
+                                        dataKey="narrative" 
+                                        stroke="#ff0055" 
+                                        fillOpacity={1} 
+                                        fill="url(#colorNarrative)" 
+                                        strokeWidth={2}
+                                    />
+                                    <Area 
+                                        type="monotone" 
+                                        name="Truth Signal"
+                                        dataKey="truth" 
+                                        stroke="#00ffcc" 
+                                        fillOpacity={1} 
+                                        fill="url(#colorTruth)" 
+                                        strokeWidth={2}
+                                    />
+                                    <Line 
+                                        type="step" 
+                                        name="Fear Index"
+                                        dataKey="fear" 
+                                        stroke="#FFD700" 
+                                        strokeWidth={1} 
+                                        dot={false}
+                                        strokeDasharray="5 5"
+                                    />
+                                </AreaChart>
+                            </ResponsiveContainer>
+                        )}
                     </div>
                 </div>
 

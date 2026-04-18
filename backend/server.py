@@ -489,6 +489,83 @@ async def get_anarchy_arithmetic():
             "cognitive_dissonance": round(dissonance, 1),
             "anarchy_index": round(abs(stability - dissonance) * random.uniform(0.8, 1.2), 1)
         })
+@api_router.get("/intel/frequency-cipher")
+async def get_frequency_cipher():
+    """
+    Simulates the collective 'Fear vs Intuition' resonance.
+    """
+    base_time = datetime.now() - timedelta(days=7)
+    data = []
+    fear = 50
+    intuition = 50
+    
+    for i in range(7):
+        fear = max(20, min(90, fear + random.uniform(-10.0, 15.0)))
+        intuition = max(20, min(90, intuition + random.uniform(-5.0, 10.0)))
+        
+        data.append({
+            "day": (base_time + timedelta(days=i)).strftime("%a"),
+            "fear_hz": round(fear, 1),
+            "intuition_hz": round(intuition, 1)
+        })
+        
+    return {"data": data}
+
+@api_router.get("/intel/invisible-hand")
+async def get_invisible_hand():
+    """
+    Simulates the flow of hidden influence (Narrative Control, Truth Signal, Fear Index)
+    over the last 12 months.
+    """
+    months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    data = []
+    
+    for month in months:
+        # Simulate a major event in Aug/Oct
+        if month in ['Aug', 'Oct', 'Nov']:
+            narrative = random.randint(60, 90)
+            fear = random.randint(60, 85)
+            truth = random.randint(10, 30)
+        else:
+            narrative = random.randint(20, 50)
+            fear = random.randint(20, 45)
+            truth = random.randint(30, 60)
+            
+        data.append({
+            "name": month,
+            "narrative": narrative,
+            "truth": truth,
+            "fear": fear
+        })
+        
+    return {"data": data}
+
+@api_router.get("/intel/project-thyself")
+async def get_project_thyself(current_user: dict = Depends(get_current_user)):
+    """
+    Returns the user's Cognitive Alchemy stats for a Radar Chart.
+    """
+    # If free tier, return low stats to show they need to upgrade
+    if not current_user.get("is_premium") and current_user.get("tier") != "sovereign":
+        data = [
+            {"subject": "Awareness", "A": 30, "fullMark": 100},
+            {"subject": "Detachment", "A": 20, "fullMark": 100},
+            {"subject": "Synthesis", "A": 15, "fullMark": 100},
+            {"subject": "Projection", "A": 10, "fullMark": 100},
+            {"subject": "Sovereignty", "A": 5, "fullMark": 100}
+        ]
+    else:
+        # If sovereign, return higher (or dynamically generated) stats
+        data = [
+            {"subject": "Awareness", "A": random.randint(70, 95), "fullMark": 100},
+            {"subject": "Detachment", "A": random.randint(65, 90), "fullMark": 100},
+            {"subject": "Synthesis", "A": random.randint(60, 85), "fullMark": 100},
+            {"subject": "Projection", "A": random.randint(50, 80), "fullMark": 100},
+            {"subject": "Sovereignty", "A": random.randint(45, 75), "fullMark": 100}
+        ]
+        
+    return {"data": data}
+
         
     return {"data": data}
 

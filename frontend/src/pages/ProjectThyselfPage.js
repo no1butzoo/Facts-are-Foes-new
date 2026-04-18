@@ -1,20 +1,44 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { 
+    Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Tooltip
+} from 'recharts';
 import { 
     Crown, Lock, Eye, Zap, BookOpen, ChevronRight, 
-    Star, Flame, Diamond, Sparkles, Shield
+    Star, Flame, Diamond, Sparkles, Shield, Loader2, User
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { useAuth } from '../contexts/AuthContext';
 import AuthModal from '../components/AuthModal';
 
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+
 const ProjectThyselfPage = () => {
     const navigate = useNavigate();
-    const { isAuthenticated, user } = useAuth();
+    const { isAuthenticated, user, token } = useAuth();
     const [showAuthModal, setShowAuthModal] = useState(false);
     const [authMode, setAuthMode] = useState('register');
     const [expandedFormula, setExpandedFormula] = useState(null);
+    const [radarData, setRadarData] = useState([]);
+    const [loadingRadar, setLoadingRadar] = useState(true);
+
+    useEffect(() => {
+        const fetchRadarData = async () => {
+            setLoadingRadar(true);
+            try {
+                const headers = isAuthenticated ? { Authorization: `Bearer ${token}` } : {};
+                const response = await axios.get(`${API}/intel/project-thyself`, { headers });
+                setRadarData(response.data.data);
+            } catch (error) {
+                console.error("Failed to load radar data:", error);
+            } finally {
+                setLoadingRadar(false);
+            }
+        };
+        fetchRadarData();
+    }, [isAuthenticated, token]);
 
     const formulas = [
         {
@@ -92,6 +116,66 @@ const ProjectThyselfPage = () => {
                     </h1>
                     <p className="text-lg max-w-xl mx-auto" style={{ color: '#888899' }}>
                         The specific alchemical formulas for turning Mental Poverty into Narrative Wealth.
+                    </p>
+                </div>
+
+                {/* Cognitive Alchemy Radar */}
+                <div className="mb-12 p-8 border" style={{ backgroundColor: '#15151e', borderColor: '#333' }}>
+                    <div className="flex items-center justify-between mb-8">
+                        <h2 className="text-xl font-bold flex items-center gap-2" style={{ color: '#fff' }}>
+                            <User className="w-5 h-5" style={{ color: '#9333ea' }} />
+                            Your Cognitive Alchemy Profile
+                        </h2>
+                        {!isAuthenticated && (
+                            <Badge style={{ backgroundColor: '#ff005520', color: '#ff0055', border: '1px solid #ff0055' }}>
+                                Uncalibrated
+                            </Badge>
+                        )}
+                    </div>
+                    
+                    <div className="h-80 w-full relative">
+                        {loadingRadar ? (
+                            <div className="flex items-center justify-center h-full">
+                                <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#9333ea' }} />
+                            </div>
+                        ) : (
+                            <ResponsiveContainer width="100%" height="100%">
+                                <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
+                                    <PolarGrid stroke="#333" />
+                                    <PolarAngleAxis dataKey="subject" tick={{ fill: '#888899', fontSize: 12 }} />
+                                    <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
+                                    <Radar 
+                                        name="Alchemy Level" 
+                                        dataKey="A" 
+                                        stroke="#9333ea" 
+                                        fill="#9333ea" 
+                                        fillOpacity={0.5} 
+                                    />
+                                    <Tooltip 
+                                        contentStyle={{ backgroundColor: '#15151e', borderColor: '#333', color: '#fff' }}
+                                        itemStyle={{ color: '#fff' }}
+                                    />
+                                </RadarChart>
+                            </ResponsiveContainer>
+                        )}
+                        {!isAuthenticated && !loadingRadar && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+                                <div className="text-center">
+                                    <Lock className="w-8 h-8 mx-auto mb-2" style={{ color: '#ff0055' }} />
+                                    <p className="text-white font-bold mb-2">Profile Locked</p>
+                                    <Button 
+                                        size="sm" 
+                                        onClick={() => setShowAuthModal(true)}
+                                        style={{ backgroundColor: '#ff0055', color: '#fff' }}
+                                    >
+                                        Login to Calibrate
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                    <p className="text-xs text-center mt-6 text-[#888899] uppercase tracking-widest">
+                        Values represent your resilience against psychological manipulation.
                     </p>
                 </div>
 

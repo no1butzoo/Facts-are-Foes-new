@@ -1,13 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'sonner';
 import { 
     Brain, Heart, AlertTriangle, Shield, Zap, RefreshCw,
-    CheckCircle, XCircle, ArrowRight, Eye, Lock
+    CheckCircle, XCircle, ArrowRight, Eye, Lock, Activity
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -17,6 +18,19 @@ const FrequencyCipherPage = () => {
     const [answers, setAnswers] = useState([]);
     const [result, setResult] = useState(null);
     const [showAnalysis, setShowAnalysis] = useState(false);
+    const [frequencyData, setFrequencyData] = useState([]);
+
+    useEffect(() => {
+        const fetchFrequencyData = async () => {
+            try {
+                const response = await axios.get(`${API}/intel/frequency-cipher`);
+                setFrequencyData(response.data.data);
+            } catch (error) {
+                console.error("Failed to load frequency data:", error);
+            }
+        };
+        fetchFrequencyData();
+    }, []);
 
     const questions = [
         {
@@ -143,6 +157,43 @@ const FrequencyCipherPage = () => {
                     <p className="text-lg max-w-xl mx-auto" style={{ color: '#888899' }}>
                         Decode whether you're being fact-checked by fear or guided by authentic intuition.
                     </p>
+                </div>
+
+                {/* Global Frequency Chart */}
+                <div className="mb-12 p-6 border" style={{ backgroundColor: '#15151e', borderColor: '#333' }}>
+                    <h2 className="text-xl font-bold flex items-center gap-2 mb-6" style={{ color: '#fff' }}>
+                        <Activity className="w-5 h-5" style={{ color: '#00ffcc' }} />
+                        Global Frequency Radar (Last 7 Days)
+                    </h2>
+                    <div className="h-64 w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <LineChart data={frequencyData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
+                                <XAxis dataKey="day" stroke="#888899" fontSize={12} tickLine={false} axisLine={false} />
+                                <YAxis stroke="#888899" fontSize={12} tickLine={false} axisLine={false} domain={[0, 100]} />
+                                <Tooltip 
+                                    contentStyle={{ backgroundColor: '#15151e', borderColor: '#333', color: '#fff' }}
+                                />
+                                <Legend wrapperStyle={{ paddingTop: '10px' }} />
+                                <Line 
+                                    type="monotone" 
+                                    name="Fear (Hz)"
+                                    dataKey="fear_hz" 
+                                    stroke="#ff0055" 
+                                    strokeWidth={2}
+                                    dot={{ fill: '#ff0055', strokeWidth: 2 }}
+                                />
+                                <Line 
+                                    type="monotone" 
+                                    name="Intuition (Hz)"
+                                    dataKey="intuition_hz" 
+                                    stroke="#00ffcc" 
+                                    strokeWidth={2}
+                                    dot={{ fill: '#00ffcc', strokeWidth: 2 }}
+                                />
+                            </LineChart>
+                        </ResponsiveContainer>
+                    </div>
                 </div>
 
                 {!showAnalysis ? (
