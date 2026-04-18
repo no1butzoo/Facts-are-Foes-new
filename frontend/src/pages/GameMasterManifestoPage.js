@@ -44,7 +44,7 @@ const GameMasterManifestoPage = () => {
                         <Crown className="w-8 h-8 text-[#D4AF37]" />
                         <div className="h-px w-16 bg-gradient-to-l from-transparent to-[#D4AF37]" />
                     </div>
-                    <h1 className="text-5xl md:text-7xl font-cinzel font-black mb-6 text-transparent bg-clip-text bg-gradient-to-b from-[#FFF8D6] to-[#D4AF37] drop-shadow-[0_0_15px_rgba(212,175,55,0.4)]">
+                    <h1 className="text-5xl md:text-7xl font-heading font-black mb-6 text-transparent bg-clip-text bg-gradient-to-b from-[#FFF8D6] to-[#D4AF37] drop-shadow-[0_0_15px_rgba(212,175,55,0.4)]">
                         THE GAME MASTER'S<br />MANIFESTO
                     </h1>
                     <p className="text-xl max-w-2xl mx-auto text-[#D4AF37] italic opacity-80">
@@ -68,7 +68,7 @@ const GameMasterManifestoPage = () => {
                                 disabled={!isSovereign && index > 0}
                             >
                                 <div className="flex items-center justify-between">
-                                    <span className={`font-cinzel font-bold ${activeCodex === index ? 'text-[#D4AF37]' : 'text-[#EAE0C8]'}`}>
+                                    <span className={`font-heading font-bold ${activeCodex === index ? 'text-[#D4AF37]' : 'text-[#EAE0C8]'}`}>
                                         Codex {index + 1}
                                     </span>
                                     {!isSovereign && index > 0 ? (
@@ -94,11 +94,11 @@ const GameMasterManifestoPage = () => {
                             {!isSovereign && activeCodex > 0 ? (
                                 <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center bg-black/80 backdrop-blur-sm z-20">
                                     <Key className="w-12 h-12 text-[#8A0303] mb-4 drop-shadow-[0_0_10px_rgba(138,3,3,0.8)]" />
-                                    <h3 className="font-cinzel text-2xl text-[#D4AF37] mb-4">Esoteric Knowledge Locked</h3>
+                                    <h3 className="font-heading text-2xl text-[#D4AF37] mb-4">Esoteric Knowledge Locked</h3>
                                     <p className="mb-6 opacity-80">This codex is reserved for Sovereign Initiates. You must demonstrate the Will to ascend.</p>
                                     <Button 
                                         onClick={() => navigate('/intel-portal')}
-                                        className="font-cinzel bg-[#8A0303] hover:bg-[#8A0303]/80 text-[#EAE0C8] border border-[#8A0303]"
+                                        className="font-heading bg-[#8A0303] hover:bg-[#8A0303]/80 text-[#EAE0C8] border border-[#8A0303]"
                                     >
                                         Initiate Sovereignty
                                     </Button>
@@ -106,18 +106,18 @@ const GameMasterManifestoPage = () => {
                             ) : null}
 
                             <div className={`transition-opacity duration-500 ${!isSovereign && activeCodex > 0 ? 'opacity-20 blur-sm' : 'opacity-100'}`}>
-                                <h2 className="text-3xl font-cinzel text-[#D4AF37] mb-6 flex items-center gap-3">
+                                <h2 className="text-3xl font-heading text-[#D4AF37] mb-6 flex items-center gap-3">
                                     <Scroll className="w-6 h-6" />
                                     {codices[activeCodex].title}
                                 </h2>
                                 
                                 <div className="space-y-6 text-lg leading-relaxed">
-                                    <p className="first-letter:text-6xl first-letter:font-cinzel first-letter:text-[#D4AF37] first-letter:mr-3 first-letter:float-left">
+                                    <p className="first-letter:text-6xl first-letter:font-heading first-letter:text-[#D4AF37] first-letter:mr-3 first-letter:float-left">
                                         {codices[activeCodex].content}
                                     </p>
                                     
                                     <div className="mt-8 p-6 bg-[#D4AF37]/5 border border-[#D4AF37]/30">
-                                        <h4 className="font-cinzel text-[#D4AF37] flex items-center gap-2 mb-3">
+                                        <h4 className="font-heading text-[#D4AF37] flex items-center gap-2 mb-3">
                                             <Sparkles className="w-4 h-4" />
                                             The Ritual of Application
                                         </h4>
@@ -135,7 +135,7 @@ const GameMasterManifestoPage = () => {
                     <div className="mt-12 text-center animate-fade-in-up">
                         <Button 
                             onClick={() => toast.success("Your Will has been recorded in the Akashic Record.")}
-                            className="bg-[#D4AF37] text-black hover:bg-transparent hover:text-[#D4AF37] border border-[#D4AF37] px-12 py-6 text-lg font-cinzel tracking-widest shadow-[0_0_20px_rgba(212,175,55,0.3)]"
+                            className="bg-[#D4AF37] text-black hover:bg-transparent hover:text-[#D4AF37] border border-[#D4AF37] px-12 py-6 text-lg font-heading tracking-widest shadow-[0_0_20px_rgba(212,175,55,0.3)]"
                         >
                             <Feather className="w-5 h-5 mr-2" />
                             Sign The Manifesto

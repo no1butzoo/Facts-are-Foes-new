@@ -21,8 +21,8 @@ const Star = ({ top, left, size, duration, delay, interactive }) => {
             toast.custom((t) => (
                 <div className="bg-[#05050A] border border-[#D4AF37] p-6 text-[#EAE0C8] shadow-[0_0_20px_rgba(212,175,55,0.15)] flex flex-col gap-2 relative overflow-hidden group">
                     <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] pointer-events-none" />
-                    <p className="font-cinzel text-xs text-[#D4AF37] uppercase tracking-widest">Akashic Resonance</p>
-                    <p className="font-serif italic text-lg leading-relaxed">"{quote}"</p>
+                    <p className="font-heading text-xs text-[#D4AF37] uppercase tracking-widest">Akashic Resonance</p>
+                    <p className="font-body italic text-lg leading-relaxed">"{quote}"</p>
                 </div>
             ));
         }

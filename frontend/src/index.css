@@ -40,12 +40,12 @@
     }
     
     body {
-        @apply font-serif antialiased;
+        @apply font-body antialiased;
         background-color: transparent !important;
     }
     
     h1, h2, h3, h4, h5, h6 {
-        @apply font-cinzel font-bold;
+        @apply font-heading font-bold;
     }
 }
 
