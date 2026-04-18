@@ -3,12 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { 
     Eye, AlertTriangle, TrendingUp, Zap, RefreshCw, Clock, 
-    Shield, Lock, ChevronRight, Loader2, ExternalLink, Brain
+    Shield, Lock, ChevronRight, Loader2, ExternalLink, Brain, Activity
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'sonner';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Legend } from 'recharts';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -16,13 +17,28 @@ const PredictiveAnalyticsPage = () => {
     const navigate = useNavigate();
     const { isAuthenticated, token } = useAuth();
     const [newsItems, setNewsItems] = useState([]);
+    const [anarchyData, setAnarchyData] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [loadingAnarchy, setLoadingAnarchy] = useState(true);
     const [generating, setGenerating] = useState(null);
     const [foeResponses, setFoeResponses] = useState({});
 
     useEffect(() => {
         fetchNews();
+        fetchAnarchyArithmetic();
     }, []);
+
+    const fetchAnarchyArithmetic = async () => {
+        setLoadingAnarchy(true);
+        try {
+            const response = await axios.get(`${API}/intel/anarchy-arithmetic`);
+            setAnarchyData(response.data.data || []);
+        } catch (error) {
+            console.error('Failed to fetch Anarchy Arithmetic:', error);
+        } finally {
+            setLoadingAnarchy(false);
+        }
+    };
 
     const fetchNews = async () => {
         setLoading(true);
@@ -109,6 +125,67 @@ const PredictiveAnalyticsPage = () => {
                             <div className="text-xs uppercase tracking-widest" style={{ color: '#888899' }}>{stat.label}</div>
                         </div>
                     ))}
+                </div>
+
+                {/* Anarchy Arithmetic Data Visualization */}
+                <div className="mb-12">
+                    <h2 className="text-xl font-bold flex items-center gap-2 mb-6" style={{ color: '#fff' }}>
+                        <Activity className="w-5 h-5" style={{ color: '#8b5cf6' }} />
+                        The Anarchy Arithmetic Index
+                    </h2>
+                    <div className="p-6 border" style={{ backgroundColor: '#15151e', borderColor: '#333' }}>
+                        {loadingAnarchy ? (
+                            <div className="flex justify-center py-12">
+                                <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#8b5cf6' }} />
+                            </div>
+                        ) : (
+                            <div className="h-80 w-full">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <AreaChart data={anarchyData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                                        <defs>
+                                            <linearGradient id="colorStability" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="5%" stopColor="#00ffcc" stopOpacity={0.3}/>
+                                                <stop offset="95%" stopColor="#00ffcc" stopOpacity={0}/>
+                                            </linearGradient>
+                                            <linearGradient id="colorDissonance" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="5%" stopColor="#ff0055" stopOpacity={0.3}/>
+                                                <stop offset="95%" stopColor="#ff0055" stopOpacity={0}/>
+                                            </linearGradient>
+                                        </defs>
+                                        <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
+                                        <XAxis dataKey="time" stroke="#888899" fontSize={12} tickLine={false} axisLine={false} />
+                                        <YAxis stroke="#888899" fontSize={12} tickLine={false} axisLine={false} />
+                                        <Tooltip 
+                                            contentStyle={{ backgroundColor: '#15151e', borderColor: '#333', color: '#fff' }}
+                                            itemStyle={{ color: '#fff' }}
+                                        />
+                                        <Legend wrapperStyle={{ paddingTop: '20px' }} />
+                                        <Area 
+                                            type="monotone" 
+                                            name="Narrative Stability"
+                                            dataKey="narrative_stability" 
+                                            stroke="#00ffcc" 
+                                            fillOpacity={1} 
+                                            fill="url(#colorStability)" 
+                                            strokeWidth={2}
+                                        />
+                                        <Area 
+                                            type="monotone" 
+                                            name="Cognitive Dissonance"
+                                            dataKey="cognitive_dissonance" 
+                                            stroke="#ff0055" 
+                                            fillOpacity={1} 
+                                            fill="url(#colorDissonance)" 
+                                            strokeWidth={2}
+                                        />
+                                    </AreaChart>
+                                </ResponsiveContainer>
+                            </div>
+                        )}
+                        <p className="text-xs text-center mt-4 uppercase tracking-widest" style={{ color: '#888899' }}>
+                            Anarchy Arithmetic mapping the degradation of mainstream narrative control over the last 24 hours.
+                        </p>
+                    </div>
                 </div>
 
                 {/* Refresh Button */}

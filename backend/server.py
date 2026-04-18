@@ -466,6 +466,32 @@ async def check_intel_access(current_user: dict = Depends(get_current_user)):
     has_access = current_user.get("tier") == "sovereign" or current_user.get("is_admin", False)
     return {"has_access": has_access}
 
+@api_router.get("/intel/anarchy-arithmetic")
+async def get_anarchy_arithmetic():
+    """
+    Proprietary Anarchy Arithmetic Root Code algorithm.
+    Simulates narrative destabilization vs. cognitive dissonance over a 24-hour period.
+    """
+    base_time = datetime.now() - timedelta(hours=24)
+    data = []
+    stability = 80
+    dissonance = 20
+    
+    for i in range(24):
+        # Introduce chaotic mathematical variance (Anarchy Arithmetic)
+        chaos_factor = random.uniform(-15.0, 15.0)
+        stability = max(10, min(95, stability + chaos_factor * 0.8))
+        dissonance = max(5, min(90, dissonance - chaos_factor + random.uniform(0, 10)))
+        
+        data.append({
+            "time": (base_time + timedelta(hours=i)).strftime("%H:00"),
+            "narrative_stability": round(stability, 1),
+            "cognitive_dissonance": round(dissonance, 1),
+            "anarchy_index": round(abs(stability - dissonance) * random.uniform(0.8, 1.2), 1)
+        })
+        
+    return {"data": data}
+
 @api_router.get("/intel/content")
 async def get_intel_content(current_user: dict = Depends(get_current_user)):
     # Gated content endpoint

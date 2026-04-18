@@ -4,7 +4,7 @@ import json
 from datetime import datetime
 
 class FactsAreFoesAPITester:
-    def __init__(self, base_url="https://intel-cipher.preview.emergentagent.com/api"):
+    def __init__(self, base_url="https://intelligence-portal-2.preview.emergentagent.com/api"):
         self.base_url = base_url
         self.token = None
         self.user_id = None
@@ -360,7 +360,7 @@ class FactsAreFoesAPITester:
         # Test create checkout session (requires auth)
         checkout_data = {
             "plan_id": "premium_monthly",
-            "origin_url": "https://intel-cipher.preview.emergentagent.com"
+            "origin_url": "https://intelligence-portal-2.preview.emergentagent.com"
         }
         
         success, response = self.run_test("Create Checkout Session", "POST", "subscription/create-checkout", 200, checkout_data)
