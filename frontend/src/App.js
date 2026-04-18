@@ -18,11 +18,14 @@ import IntelPortalPage from "./pages/IntelPortalPage";
 import InvisibleHandPage from "./pages/InvisibleHandPage";
 import StarfieldBackground from "./components/StarfieldBackground";
 import GameMasterManifestoPage from "./pages/GameMasterManifestoPage";
+import NetworkPingWidget from "./components/NetworkPingWidget";
+import RedirectPage from "./pages/RedirectPage";
 import "./App.css";
 
 function App() {
   return (
     <AuthProvider>
+        <NetworkPingWidget />
       <BrowserRouter>
         <StarfieldBackground />
         <Layout>
@@ -44,6 +47,7 @@ function App() {
             <Route path="/intel-portal" element={<IntelPortalPage />} />
             <Route path="/invisible-hand" element={<InvisibleHandPage />} />
           </Routes>
+            <Route path="/s/:shortCode" element={<RedirectPage />} />
             <Route path="/game-master-manifesto" element={<GameMasterManifestoPage />} />
         </Layout>
         <Toaster position="bottom-right" theme="dark" />

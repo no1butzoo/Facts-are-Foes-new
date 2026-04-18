@@ -174,6 +174,24 @@ class CipherSubmission(BaseModel):
     intuition_percentage: float
     result_type: str
 
+class LinkCreate(BaseModel):
+    short_code: str
+    target_url: str
+
+class LinkResponse(BaseModel):
+    id: str
+    user_id: str
+    short_code: str
+    target_url: str
+    clicks: int
+    created_at: str
+
+class NetworkEvent(BaseModel):
+    id: str
+    event_type: str
+    message: str
+    created_at: str
+
 # ============== AUTH HELPERS ==============
 
 def hash_password(password: str) -> str:
@@ -629,6 +647,15 @@ async def create_fact(fact: FactCreate, current_user: dict = Depends(get_current
         "is_featured": False
     }
     await db.facts.insert_one(fact_doc)
+    
+    # Broadcast to Network
+    await db.network_events.insert_one({
+        "id": str(uuid.uuid4()),
+        "event_type": "fact_submitted",
+        "message": f"Akashic Update: New Truth archived in {fact.category}",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+    
     return FactResponse(**fact_doc)
 
 @api_router.put("/facts/{fact_id}", response_model=FactResponse)
@@ -910,6 +937,58 @@ async def get_admin_user(credentials: HTTPAuthorizationCredentials = Depends(sec
     if user["email"] in ADMIN_EMAILS or (first_user and user["id"] == first_user["id"]):
         user["is_admin"] = True # Flag for frontend
         return user
+# ============== NETWORK EVENTS ROUTES ==============
+
+@api_router.get("/network/events")
+async def get_network_events(since: Optional[str] = None):
+    query = {}
+    if since:
+        query["created_at"] = {"$gt": since}
+    events = await db.network_events.find(query, {"_id": 0}).sort("created_at", -1).limit(10).to_list(10)
+    return {"events": events}
+
+# ============== SOVEREIGN LINKS ROUTES ==============
+
+@api_router.post("/links", response_model=LinkResponse)
+async def create_link(link: LinkCreate, current_user: dict = Depends(get_current_user)):
+    if current_user.get("tier") != "sovereign" and not current_user.get("is_admin"):
+        raise HTTPException(status_code=403, detail="Sovereign tier required")
+    
+    existing = await db.sovereign_links.find_one({"short_code": link.short_code})
+    if existing:
+        raise HTTPException(status_code=400, detail="Short code already exists")
+    
+    link_doc = {
+        "id": str(uuid.uuid4()),
+        "user_id": current_user["id"],
+        "short_code": link.short_code,
+        "target_url": link.target_url,
+        "clicks": 0,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.sovereign_links.insert_one(link_doc)
+    return LinkResponse(**link_doc)
+
+@api_router.get("/links/my-links", response_model=List[LinkResponse])
+async def get_my_links(current_user: dict = Depends(get_current_user)):
+    links = await db.sovereign_links.find({"user_id": current_user["id"]}, {"_id": 0}).sort("created_at", -1).to_list(100)
+    return [LinkResponse(**l) for l in links]
+
+@api_router.get("/s/{short_code}")
+async def resolve_link(short_code: str):
+    link = await db.sovereign_links.find_one({"short_code": short_code}, {"_id": 0})
+    if not link:
+        raise HTTPException(status_code=404, detail="Link not found")
+    await db.sovereign_links.update_one({"short_code": short_code}, {"$inc": {"clicks": 1}})
+    return {"target_url": link["target_url"]}
+
+@api_router.delete("/links/{link_id}")
+async def delete_link(link_id: str, current_user: dict = Depends(get_current_user)):
+    result = await db.sovereign_links.delete_one({"id": link_id, "user_id": current_user["id"]})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Link not found or unauthorized")
+    return {"message": "Link deleted"}
+
     raise HTTPException(status_code=403, detail="Admin access required")
 
 @api_router.get("/admin/stats")
