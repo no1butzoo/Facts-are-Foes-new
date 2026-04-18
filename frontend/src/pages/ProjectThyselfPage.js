@@ -101,7 +101,7 @@ const ProjectThyselfPage = () => {
     };
 
     return (
-        <div className="min-h-screen py-12 px-6" style={{ backgroundColor: '#0a0a0f' }}>
+        <div className="min-h-screen py-12 px-6" style={{ backgroundColor: 'transparent' }}>
             <div className="max-w-4xl mx-auto">
                 {/* Header */}
                 <div className="text-center mb-12">
@@ -120,7 +120,7 @@ const ProjectThyselfPage = () => {
                 </div>
 
                 {/* Cognitive Alchemy Radar */}
-                <div className="mb-12 p-8 border" style={{ backgroundColor: '#15151e', borderColor: '#333' }}>
+                <div className="mb-12 p-8 border" style={{ backgroundColor: 'rgba(10,10,15,0.7)', backdropFilter: 'blur(10px)', borderColor: '#333' }}>
                     <div className="flex items-center justify-between mb-8">
                         <h2 className="text-xl font-bold flex items-center gap-2" style={{ color: '#fff' }}>
                             <User className="w-5 h-5" style={{ color: '#9333ea' }} />
@@ -271,7 +271,7 @@ const ProjectThyselfPage = () => {
                 </div>
 
                 {/* CTA */}
-                <div className="p-8 border text-center" style={{ backgroundColor: '#15151e', borderColor: '#FFD700' }}>
+                <div className="p-8 border text-center" style={{ backgroundColor: 'rgba(10,10,15,0.7)', backdropFilter: 'blur(10px)', borderColor: '#FFD700' }}>
                     <Sparkles className="w-12 h-12 mx-auto mb-4" style={{ color: '#FFD700' }} />
                     <h3 className="text-2xl font-bold mb-2" style={{ color: '#fff' }}>
                         Unlock All 5 Alchemical Formulas

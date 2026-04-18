@@ -81,7 +81,7 @@ const FFTCoursePage = () => {
     ];
 
     return (
-        <div className="min-h-screen" style={{ backgroundColor: '#0a0a0f' }}>
+        <div className="min-h-screen" style={{ backgroundColor: 'transparent' }}>
             {/* Custom styles for this page */}
             <style>{`
                 .fft-primary { color: #00ffcc; }
@@ -290,7 +290,7 @@ const FFTCoursePage = () => {
                     <>
                         <div 
                             className="h-64 p-3 overflow-y-auto flex flex-col gap-2"
-                            style={{ backgroundColor: '#15151e' }}
+                            style={{ backgroundColor: 'rgba(10,10,15,0.7)', backdropFilter: 'blur(10px)' }}
                         >
                             {chatMessages.map((msg, i) => (
                                 <div 

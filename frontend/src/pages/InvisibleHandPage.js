@@ -41,7 +41,7 @@ const InvisibleHandPage = () => {
     };
 
     return (
-        <div className="min-h-screen py-12 px-6" style={{ backgroundColor: '#0a0a0f' }}>
+        <div className="min-h-screen py-12 px-6" style={{ backgroundColor: 'transparent' }}>
             <div className="max-w-6xl mx-auto">
                 {/* Header */}
                 <div className="text-center mb-12">
@@ -59,7 +59,7 @@ const InvisibleHandPage = () => {
                 </div>
 
                 {/* Main Chart */}
-                <div className="p-6 border mb-8" style={{ backgroundColor: '#15151e', borderColor: '#333' }}>
+                <div className="p-6 border mb-8" style={{ backgroundColor: 'rgba(10,10,15,0.7)', backdropFilter: 'blur(10px)', borderColor: '#333' }}>
                     <div className="flex items-center justify-between mb-8">
                         <h2 className="text-xl font-bold flex items-center gap-2" style={{ color: '#fff' }}>
                             <Activity className="w-5 h-5" style={{ color: '#00ffcc' }} />
@@ -136,7 +136,7 @@ const InvisibleHandPage = () => {
 
                 {/* Analysis Cards */}
                 <div className="grid md:grid-cols-3 gap-6">
-                    <div className="p-6 border" style={{ backgroundColor: '#15151e', borderColor: '#ff0055' }}>
+                    <div className="p-6 border" style={{ backgroundColor: 'rgba(10,10,15,0.7)', backdropFilter: 'blur(10px)', borderColor: '#ff0055' }}>
                         <div className="flex items-center gap-2 mb-4">
                             <AlertTriangle className="w-5 h-5" style={{ color: '#ff0055' }} />
                             <h3 className="font-bold text-white">Narrative Spikes</h3>
@@ -146,7 +146,7 @@ const InvisibleHandPage = () => {
                         </p>
                     </div>
 
-                    <div className="p-6 border" style={{ backgroundColor: '#15151e', borderColor: '#00ffcc' }}>
+                    <div className="p-6 border" style={{ backgroundColor: 'rgba(10,10,15,0.7)', backdropFilter: 'blur(10px)', borderColor: '#00ffcc' }}>
                         <div className="flex items-center gap-2 mb-4">
                             <Shield className="w-5 h-5" style={{ color: '#00ffcc' }} />
                             <h3 className="font-bold text-white">Truth Resonance</h3>
@@ -156,7 +156,7 @@ const InvisibleHandPage = () => {
                         </p>
                     </div>
 
-                    <div className="p-6 border" style={{ backgroundColor: '#15151e', borderColor: '#FFD700' }}>
+                    <div className="p-6 border" style={{ backgroundColor: 'rgba(10,10,15,0.7)', backdropFilter: 'blur(10px)', borderColor: '#FFD700' }}>
                         <div className="flex items-center gap-2 mb-4">
                             <Zap className="w-5 h-5" style={{ color: '#FFD700' }} />
                             <h3 className="font-bold text-white">Prediction Alpha</h3>

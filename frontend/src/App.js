@@ -16,12 +16,15 @@ import FrequencyCipherPage from "./pages/FrequencyCipherPage";
 import ProjectThyselfPage from "./pages/ProjectThyselfPage";
 import IntelPortalPage from "./pages/IntelPortalPage";
 import InvisibleHandPage from "./pages/InvisibleHandPage";
+import StarfieldBackground from "./components/StarfieldBackground";
+import GameMasterManifestoPage from "./pages/GameMasterManifestoPage";
 import "./App.css";
 
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+        <StarfieldBackground />
         <Layout>
           <Routes>
             <Route path="/" element={<HomePage />} />
@@ -41,6 +44,7 @@ function App() {
             <Route path="/intel-portal" element={<IntelPortalPage />} />
             <Route path="/invisible-hand" element={<InvisibleHandPage />} />
           </Routes>
+            <Route path="/game-master-manifesto" element={<GameMasterManifestoPage />} />
         </Layout>
         <Toaster position="bottom-right" theme="dark" />
       </BrowserRouter>

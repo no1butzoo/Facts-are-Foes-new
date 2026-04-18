@@ -142,7 +142,7 @@ const FrequencyCipherPage = () => {
     };
 
     return (
-        <div className="min-h-screen py-12 px-6" style={{ backgroundColor: '#0a0a0f' }}>
+        <div className="min-h-screen py-12 px-6" style={{ backgroundColor: 'transparent' }}>
             <div className="max-w-3xl mx-auto">
                 {/* Header */}
                 <div className="text-center mb-12">
@@ -160,7 +160,7 @@ const FrequencyCipherPage = () => {
                 </div>
 
                 {/* Global Frequency Chart */}
-                <div className="mb-12 p-6 border" style={{ backgroundColor: '#15151e', borderColor: '#333' }}>
+                <div className="mb-12 p-6 border" style={{ backgroundColor: 'rgba(10,10,15,0.7)', backdropFilter: 'blur(10px)', borderColor: '#333' }}>
                     <h2 className="text-xl font-bold flex items-center gap-2 mb-6" style={{ color: '#fff' }}>
                         <Activity className="w-5 h-5" style={{ color: '#00ffcc' }} />
                         Global Frequency Radar (Last 7 Days)
@@ -198,7 +198,7 @@ const FrequencyCipherPage = () => {
 
                 {!showAnalysis ? (
                     /* Question Card */
-                    <div className="p-8 border" style={{ backgroundColor: '#15151e', borderColor: '#333' }}>
+                    <div className="p-8 border" style={{ backgroundColor: 'rgba(10,10,15,0.7)', backdropFilter: 'blur(10px)', borderColor: '#333' }}>
                         {/* Progress */}
                         <div className="flex items-center gap-2 mb-6">
                             {questions.map((_, i) => (
@@ -256,7 +256,7 @@ const FrequencyCipherPage = () => {
                     </div>
                 ) : (
                     /* Results */
-                    <div className="p-8 border" style={{ backgroundColor: '#15151e', borderColor: result.color }}>
+                    <div className="p-8 border" style={{ backgroundColor: 'rgba(10,10,15,0.7)', backdropFilter: 'blur(10px)', borderColor: result.color }}>
                         <div className="text-center mb-8">
                             <div 
                                 className="w-24 h-24 mx-auto mb-6 flex items-center justify-center border-2"

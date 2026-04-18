@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Space+Grotesk:wght@300;400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Cormorant+Garamond:ital,wght@0,400;0,700;1,400&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -36,85 +36,69 @@
     
     html {
         color-scheme: dark;
+        background-color: transparent;
     }
     
     body {
-        @apply bg-background text-foreground font-body antialiased;
-        background-color: #020204;
-    }
-    
-    body::before {
-        content: '';
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
-        z-index: 9999;
-        opacity: 0.03;
-        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        @apply font-serif antialiased;
+        background-color: transparent !important;
     }
     
     h1, h2, h3, h4, h5, h6 {
-        @apply font-heading;
+        @apply font-cinzel font-bold;
     }
 }
 
 @layer utilities {
     .text-gradient-gold {
-        @apply bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-400 bg-clip-text text-transparent;
+        @apply bg-gradient-to-r from-[#D4AF37] via-[#FFF8D6] to-[#D4AF37] bg-clip-text text-transparent;
     }
     
     .glow-gold {
-        box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
     }
     
     .glow-gold-strong {
-        box-shadow: 0 0 40px rgba(255, 215, 0, 0.5);
+        box-shadow: 0 0 40px rgba(212, 175, 55, 0.5);
     }
     
     .glass-dark {
-        @apply bg-black/40 backdrop-blur-xl border border-white/10;
+        @apply bg-black/20 backdrop-blur-md border border-[#D4AF37]/30;
     }
     
     .neon-border {
-        @apply border border-primary/50;
-        box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+        border: 1px solid rgba(212, 175, 55, 0.5);
+        box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
     }
     
     .hieroglyph-bg {
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cg fill='%23FFD700' fill-opacity='0.03'%3E%3Cpath d='M30 0L35 15H45L37 24L42 39L30 30L18 39L23 24L15 15H25L30 0Z'/%3E%3C/g%3E%3C/svg%3E");
-    }
-    
-    .drop-cap::first-letter {
-        @apply float-left text-7xl font-heading text-primary mr-3 leading-none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cg fill='%23D4AF37' fill-opacity='0.05'%3E%3Cpath d='M30 0L35 15H45L37 24L42 39L30 30L18 39L23 24L15 15H25L30 0Z'/%3E%3C/g%3E%3C/svg%3E");
     }
 }
 
 /* Scrollbar styling */
 ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-    background: #020204;
+    background: #05050A;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #1E293B;
+    background: #2A2A35;
     border-radius: 0;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #FFD700;
+    background: #D4AF37;
 }
 
 /* Selection styling */
 ::selection {
-    background: rgba(255, 215, 0, 0.3);
-    color: #FFD700;
+    background: rgba(212, 175, 55, 0.3);
+    color: #FFF8D6;
 }
 
 @layer base {

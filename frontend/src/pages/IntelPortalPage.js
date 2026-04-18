@@ -81,7 +81,7 @@ const IntelPortalPage = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#0a0a0f' }}>
+            <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'transparent' }}>
                 <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#ff0055' }} />
             </div>
         );
@@ -90,7 +90,7 @@ const IntelPortalPage = () => {
     // Locked State - Show Subscription
     if (!hasAccess) {
         return (
-            <div className="min-h-screen py-12 px-6" style={{ backgroundColor: '#0a0a0f' }}>
+            <div className="min-h-screen py-12 px-6" style={{ backgroundColor: 'transparent' }}>
                 <div className="max-w-4xl mx-auto">
                     {/* Header */}
                     <div className="text-center mb-12">
@@ -106,7 +106,7 @@ const IntelPortalPage = () => {
                     </div>
 
                     {/* Subscription Card */}
-                    <div className="p-8 border-2 relative" style={{ backgroundColor: '#15151e', borderColor: '#ff0055' }}>
+                    <div className="p-8 border-2 relative" style={{ backgroundColor: 'rgba(10,10,15,0.7)', backdropFilter: 'blur(10px)', borderColor: '#ff0055' }}>
                         <div className="absolute -top-4 left-1/2 -translate-x-1/2">
                             <span className="px-4 py-1 text-xs uppercase tracking-widest font-bold flex items-center gap-1" style={{ backgroundColor: '#ff0055', color: '#fff' }}>
                                 <Shield className="w-3 h-3" />
@@ -170,7 +170,7 @@ const IntelPortalPage = () => {
                             { quote: "The counter-intel hooks changed my entire content strategy.", author: "Digital Sovereign" },
                             { quote: "Finally, a source the algorithms can't suppress.", author: "Truth Seeker" }
                         ].map((testimonial, i) => (
-                            <div key={i} className="p-4 border" style={{ backgroundColor: '#15151e', borderColor: '#333' }}>
+                            <div key={i} className="p-4 border" style={{ backgroundColor: 'rgba(10,10,15,0.7)', backdropFilter: 'blur(10px)', borderColor: '#333' }}>
                                 <div className="flex gap-1 mb-2">
                                     {[...Array(5)].map((_, j) => (
                                         <Star key={j} className="w-4 h-4 fill-current" style={{ color: '#ff0055' }} />
@@ -195,7 +195,7 @@ const IntelPortalPage = () => {
 
     // Unlocked State - Show Content
     return (
-        <div className="min-h-screen py-12 px-6" style={{ backgroundColor: '#0a0a0f' }}>
+        <div className="min-h-screen py-12 px-6" style={{ backgroundColor: 'transparent' }}>
             <div className="max-w-6xl mx-auto">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-8">
@@ -217,7 +217,7 @@ const IntelPortalPage = () => {
                     <Button 
                         onClick={() => navigate('/invisible-hand')}
                         className="h-auto py-4 justify-start gap-3"
-                        style={{ backgroundColor: '#15151e', border: '1px solid #333', color: '#fff' }}
+                        style={{ backgroundColor: 'rgba(10,10,15,0.7)', backdropFilter: 'blur(10px)', border: '1px solid #333', color: '#fff' }}
                     >
                         <Eye className="w-6 h-6" style={{ color: '#ff0055' }} />
                         <div className="text-left">
@@ -228,7 +228,7 @@ const IntelPortalPage = () => {
                     <Button 
                         onClick={() => navigate('/predictive-analytics')}
                         className="h-auto py-4 justify-start gap-3"
-                        style={{ backgroundColor: '#15151e', border: '1px solid #333', color: '#fff' }}
+                        style={{ backgroundColor: 'rgba(10,10,15,0.7)', backdropFilter: 'blur(10px)', border: '1px solid #333', color: '#fff' }}
                     >
                         <Eye className="w-6 h-6" style={{ color: '#ff0055' }} />
                         <div className="text-left">
@@ -239,7 +239,7 @@ const IntelPortalPage = () => {
                     <Button 
                         onClick={() => navigate('/frequency-cipher')}
                         className="h-auto py-4 justify-start gap-3"
-                        style={{ backgroundColor: '#15151e', border: '1px solid #333', color: '#fff' }}
+                        style={{ backgroundColor: 'rgba(10,10,15,0.7)', backdropFilter: 'blur(10px)', border: '1px solid #333', color: '#fff' }}
                     >
                         <Zap className="w-6 h-6" style={{ color: '#00ffcc' }} />
                         <div className="text-left">
@@ -250,7 +250,7 @@ const IntelPortalPage = () => {
                     <Button 
                         onClick={() => navigate('/project-thyself')}
                         className="h-auto py-4 justify-start gap-3"
-                        style={{ backgroundColor: '#15151e', border: '1px solid #333', color: '#fff' }}
+                        style={{ backgroundColor: 'rgba(10,10,15,0.7)', backdropFilter: 'blur(10px)', border: '1px solid #333', color: '#fff' }}
                     >
                         <Crown className="w-6 h-6" style={{ color: '#FFD700' }} />
                         <div className="text-left">
@@ -264,7 +264,7 @@ const IntelPortalPage = () => {
                 <h2 className="text-xl font-bold mb-4" style={{ color: '#fff' }}>Latest Intel Drops</h2>
                 <div className="grid md:grid-cols-2 gap-4">
                     {intelContent.map((item, i) => (
-                        <div key={i} className="p-6 border" style={{ backgroundColor: '#15151e', borderColor: '#333' }}>
+                        <div key={i} className="p-6 border" style={{ backgroundColor: 'rgba(10,10,15,0.7)', backdropFilter: 'blur(10px)', borderColor: '#333' }}>
                             <Badge className="mb-3" style={{ backgroundColor: 'rgba(255,0,85,0.2)', color: '#ff0055', border: '1px solid rgba(255,0,85,0.3)' }}>
                                 {item.type}
                             </Badge>

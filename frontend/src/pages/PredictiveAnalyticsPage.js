@@ -94,7 +94,7 @@ const PredictiveAnalyticsPage = () => {
     };
 
     return (
-        <div className="min-h-screen py-12 px-6" style={{ backgroundColor: '#0a0a0f' }}>
+        <div className="min-h-screen py-12 px-6" style={{ backgroundColor: 'transparent' }}>
             <div className="max-w-6xl mx-auto">
                 {/* Header */}
                 <div className="text-center mb-12">
@@ -119,7 +119,7 @@ const PredictiveAnalyticsPage = () => {
                         { label: 'Foe Responses', value: Object.keys(foeResponses).length, icon: Zap },
                         { label: 'Prediction Accuracy', value: '94%', icon: Brain }
                     ].map((stat, i) => (
-                        <div key={i} className="p-4 border" style={{ backgroundColor: '#15151e', borderColor: '#333' }}>
+                        <div key={i} className="p-4 border" style={{ backgroundColor: 'rgba(10,10,15,0.7)', backdropFilter: 'blur(10px)', borderColor: '#333' }}>
                             <stat.icon className="w-5 h-5 mb-2" style={{ color: '#00ffcc' }} />
                             <div className="text-2xl font-bold" style={{ color: '#fff' }}>{stat.value}</div>
                             <div className="text-xs uppercase tracking-widest" style={{ color: '#888899' }}>{stat.label}</div>
@@ -133,7 +133,7 @@ const PredictiveAnalyticsPage = () => {
                         <Activity className="w-5 h-5" style={{ color: '#8b5cf6' }} />
                         The Anarchy Arithmetic Index
                     </h2>
-                    <div className="p-6 border" style={{ backgroundColor: '#15151e', borderColor: '#333' }}>
+                    <div className="p-6 border" style={{ backgroundColor: 'rgba(10,10,15,0.7)', backdropFilter: 'blur(10px)', borderColor: '#333' }}>
                         {loadingAnarchy ? (
                             <div className="flex justify-center py-12">
                                 <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#8b5cf6' }} />
@@ -309,7 +309,7 @@ const PredictiveAnalyticsPage = () => {
                 )}
 
                 {/* CTA */}
-                <div className="mt-12 p-8 text-center border" style={{ backgroundColor: '#15151e', borderColor: '#ff0055' }}>
+                <div className="mt-12 p-8 text-center border" style={{ backgroundColor: 'rgba(10,10,15,0.7)', backdropFilter: 'blur(10px)', borderColor: '#ff0055' }}>
                     <Lock className="w-12 h-12 mx-auto mb-4" style={{ color: '#ff0055' }} />
                     <h3 className="text-2xl font-bold mb-2" style={{ color: '#fff' }}>
                         Unlock Full Intelligence Access

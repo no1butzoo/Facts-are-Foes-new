@@ -33,13 +33,13 @@ const Layout = ({ children }) => {
         { path: '/', label: 'Home', icon: Triangle },
         { path: '/explore', label: 'Explore', icon: Compass },
         { path: '/intel-portal', label: 'Intelligence', icon: Shield },
-        { path: '/fft-course', label: 'FFT Course', icon: GraduationCap },
+        { path: '/game-master-manifesto', label: 'The Manifesto', icon: GraduationCap },
     ];
 
     return (
-        <div className="min-h-screen bg-background hieroglyph-bg">
+        <div className="min-h-screen bg-transparent">
             {/* Navigation */}
-            <nav className="fixed top-0 left-0 right-0 z-50 glass-dark">
+            <nav className="fixed top-0 left-0 right-0 z-50 glass-dark border-b border-[#D4AF37]/20">
                 <div className="max-w-7xl mx-auto px-6 py-4">
                     <div className="flex items-center justify-between">
                         {/* Logo */}
