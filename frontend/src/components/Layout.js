@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Triangle, Menu, X, User, LogOut, Plus, Compass, Shield, GraduationCap } from 'lucide-react';
+import { Triangle, Menu, X, User, LogOut, Plus, Compass, Shield, GraduationCap, Eye } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from './ui/button';
 import {
@@ -34,6 +34,7 @@ const Layout = ({ children }) => {
         { path: '/explore', label: 'Explore', icon: Compass },
         { path: '/intel-portal', label: 'Intelligence', icon: Shield },
         { path: '/game-master-manifesto', label: 'The Manifesto', icon: GraduationCap },
+        { path: '/foes', label: 'The Foes', icon: Eye },
     ];
 
     return (

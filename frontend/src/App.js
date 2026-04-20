@@ -19,6 +19,7 @@ import InvisibleHandPage from "./pages/InvisibleHandPage";
 import StarfieldBackground from "./components/StarfieldBackground";
 import GameMasterManifestoPage from "./pages/GameMasterManifestoPage";
 import NetworkPingWidget from "./components/NetworkPingWidget";
+import FoesOfTheFuturePage from "./pages/FoesOfTheFuturePage";
 import RedirectPage from "./pages/RedirectPage";
 import "./App.css";
 
@@ -46,9 +47,10 @@ function App() {
             <Route path="/project-thyself" element={<ProjectThyselfPage />} />
             <Route path="/intel-portal" element={<IntelPortalPage />} />
             <Route path="/invisible-hand" element={<InvisibleHandPage />} />
-          </Routes>
             <Route path="/s/:shortCode" element={<RedirectPage />} />
+            <Route path="/foes" element={<FoesOfTheFuturePage />} />
             <Route path="/game-master-manifesto" element={<GameMasterManifestoPage />} />
+          </Routes>
         </Layout>
         <Toaster position="bottom-right" theme="dark" />
       </BrowserRouter>
