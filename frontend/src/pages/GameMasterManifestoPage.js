@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Crown, BookOpen, Feather, Eye, Key, ChevronRight, Scroll, Sparkles } from 'lucide-react';
+import { Crown, BookOpen, Feather, Eye, Key, ChevronRight, Scroll, Sparkles, Lock } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '../components/ui/button';
 import { toast } from 'sonner';
